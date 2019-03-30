@@ -1,14 +1,10 @@
 ﻿using Genesys.Bayeux.Client.Logging;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using static Genesys.Bayeux.Client.Logging.LogProvider;
@@ -180,30 +176,6 @@ namespace Genesys.Bayeux.Client
         {
             currentConnection = newConnection;
             subscriber.OnConnected();
-        }
-
-        // On defining .NET events
-        // https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/event
-        // https://stackoverflow.com/questions/3880789/why-should-we-use-eventhandler
-        // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/events/how-to-publish-events-that-conform-to-net-framework-guidelines
-        public class EventReceivedArgs : EventArgs
-        {
-            readonly JObject ev;
-
-            public EventReceivedArgs(JObject ev)
-            {
-                this.ev = ev;
-            }
-
-            // https://docs.cometd.org/current/reference/#_code_data_code
-            // The data message field is an arbitrary JSON encoded *object*
-            public JObject Data { get => (JObject) ev["data"]; }
-
-            public string Channel { get => (string) ev["channel"]; }
-
-            public JObject Message { get => ev; }
-
-            public override string ToString() => ev.ToString();
         }
 
         public event EventHandler<EventReceivedArgs> EventReceived;

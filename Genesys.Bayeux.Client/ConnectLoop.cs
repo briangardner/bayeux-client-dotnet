@@ -155,6 +155,7 @@ namespace Genesys.Bayeux.Client
                                 log.Info($"Re-connecting after {lastAdvice.interval} ms on server request.");
 
                             await Task.Delay(lastAdvice.interval).ConfigureAwait(false);
+                            await Handshake(pollCancel.Token).ConfigureAwait(false);
                             await Connect(pollCancel.Token).ConfigureAwait(false);
                             break;
                     }
@@ -182,7 +183,11 @@ namespace Genesys.Bayeux.Client
             catch (BayeuxRequestException e)
             {
                 context.SetConnectionState(ConnectionState.Connecting);
-                log.Error($"Bayeux request failed with error: {e.BayeuxError}");
+                transportFailed = true;
+
+                var reconnectDelay = reconnectDelays.GetNext();
+                log.Error($"Bayeux request failed with error: {e.BayeuxError}. Rehandshaking after {reconnectDelay}");
+                await Task.Delay(reconnectDelay).ConfigureAwait(false);
             }
         }
 
