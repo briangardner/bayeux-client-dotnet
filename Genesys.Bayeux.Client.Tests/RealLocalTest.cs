@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
+using Genesys.Bayeux.Client.Channels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -36,7 +37,7 @@ namespace Genesys.Bayeux.Client.Tests
             bayeuxClient.ConnectionStateChanged += (e, args) =>
                 Debug.WriteLine($"Bayeux connection state changed to {args.ConnectionState}");
 
-            bayeuxClient.AddSubscriptions("/**");
+            bayeuxClient.AddSubscriptions(new ChannelId( "/**"));
 
             await bayeuxClient.Start();
             // End: README example
@@ -64,7 +65,7 @@ namespace Genesys.Bayeux.Client.Tests
             bayeuxClient.ConnectionStateChanged += (e, args) =>
                 Debug.WriteLine($"Bayeux connection state changed to {args.ConnectionState}");
 
-            bayeuxClient.AddSubscriptions("/**");
+            bayeuxClient.AddSubscriptions(new ChannelId( "/**"));
 
             await bayeuxClient.Start();
 

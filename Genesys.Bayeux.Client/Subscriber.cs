@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Genesys.Bayeux.Client.Channels;
 using static Genesys.Bayeux.Client.BayeuxClient;
 
 namespace Genesys.Bayeux.Client
@@ -17,10 +18,10 @@ namespace Genesys.Bayeux.Client
             this.client = client;
         }
 
-        public void AddSubscription(IEnumerable<string> channels) =>
+        public void AddSubscription(IEnumerable<ChannelId> channels) =>
             subscribedChannels.Add(channels);
 
-        public void RemoveSubscription(IEnumerable<string> channels) =>
+        public void RemoveSubscription(IEnumerable<ChannelId> channels) =>
             subscribedChannels.Remove(channels);
 
         public void OnConnected()
@@ -33,16 +34,16 @@ namespace Genesys.Bayeux.Client
 
         class ChannelList
         {
-            readonly List<string> items;
+            readonly List<ChannelId> items;
             readonly object syncRoot;
 
             public ChannelList()
             {
-                items = new List<string>();
+                items = new List<ChannelId>();
                 syncRoot = ((ICollection)items).SyncRoot;
             }
 
-            public void Add(IEnumerable<string> channels)
+            public void Add(IEnumerable<ChannelId> channels)
             {
                 lock (syncRoot)
                 {
@@ -50,7 +51,7 @@ namespace Genesys.Bayeux.Client
                 }
             }
 
-            public void Remove(IEnumerable<string> channels)
+            public void Remove(IEnumerable<ChannelId> channels)
             {
                 lock (syncRoot)
                 {
@@ -59,11 +60,11 @@ namespace Genesys.Bayeux.Client
                 }
             }
 
-            public List<string> Copy()
+            public List<ChannelId> Copy()
             {
                 lock (syncRoot)
                 {
-                    return new List<string>(items);
+                    return new List<ChannelId>(items);
                 }
             }
         }

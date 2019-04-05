@@ -1,16 +1,13 @@
 ﻿using Genesys.Bayeux.Client.Logging;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Genesys.Bayeux.Client.Channels;
 using static Genesys.Bayeux.Client.Logging.LogProvider;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Tests")]
@@ -20,6 +17,7 @@ namespace Genesys.Bayeux.Client
     public class BayeuxClient : IDisposable, IBayeuxClientContext
     {
         internal static readonly ILog log;
+        internal Dictionary<string, AbstractChannel> Channels { get; } = new Dictionary<string, AbstractChannel>();
 
         static BayeuxClient()
         {
@@ -215,59 +213,81 @@ namespace Genesys.Bayeux.Client
 
         /// <summary>
         /// Adds a subscription. Subscribes immediately if this BayeuxClient is connected.
-        /// This is equivalent to <see cref="Subscribe(IEnumerable{string}, CancellationToken)"/>, but does not await result and does not throw an exception if disconnected.
+        /// This is equivalent to <see cref="Subscribe(IEnumerable{ChannelId}, CancellationToken)"/>, but does not await result and does not throw an exception if disconnected.
         /// </summary>
         /// <param name="channels"></param>
-        public void AddSubscriptions(params string[] channels) =>
+        public void AddSubscriptions(params ChannelId[] channels) =>
             SubscribeImpl(channels, CancellationToken.None, throwIfNotConnected: false);
+
+        [Obsolete("Please use ChannelId type, instead of string")]
+        public void AddSubscriptions(params string[] channels)
+        {
+            var newChannels = new List<ChannelId>();
+            foreach (var channel in channels)
+            {
+                newChannels.Add(new ChannelId(channel));
+            }
+            AddSubscriptions(newChannels.ToArray());
+        }
 
         /// <summary>
         /// Removes subscriptions. Unsubscribes immediately if this BayeuxClient is connected.
-        /// This is equivalent to <see cref="Unsubscribe(IEnumerable{string}, CancellationToken)"/>, but does not await result and does not throw an exception if disconnected.
+        /// This is equivalent to <see cref="Unsubscribe(IEnumerable{ChannelId}, CancellationToken)"/>, but does not await result and does not throw an exception if disconnected.
         /// </summary>
         /// <param name="channels"></param>
-        public void RemoveSubscriptions(params string[] channels) =>
-            UnsubscribeImpl(channels, CancellationToken.None, throwIfNotConnected: false);            
+        public void RemoveSubscriptions(params ChannelId[] channels) =>
+            UnsubscribeImpl(channels, CancellationToken.None, throwIfNotConnected: false);
+
+        [Obsolete("Please use ChannelId type, instead of string")]
+        public void RemoveSubscriptions(params string[] channels)
+        {
+            var newChannels = new List<ChannelId>();
+            foreach (var channel in channels)
+            {
+                newChannels.Add(new ChannelId(channel));
+            }
+            RemoveSubscriptions(newChannels.ToArray());
+        }
 
         /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
-        public Task Subscribe(string channel, CancellationToken cancellationToken = default(CancellationToken)) =>
+        public Task Subscribe(ChannelId channel, CancellationToken cancellationToken = default(CancellationToken)) =>
             Subscribe(new[] { channel }, cancellationToken);
 
         /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
-        public Task Unsubscribe(string channel, CancellationToken cancellationToken = default(CancellationToken)) =>
+        public Task Unsubscribe(ChannelId channel, CancellationToken cancellationToken = default(CancellationToken)) =>
             Unsubscribe(new[] { channel }, cancellationToken);
 
         /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
-        public Task Subscribe(IEnumerable<string> channels, CancellationToken cancellationToken = default(CancellationToken)) =>
+        public Task Subscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken = default(CancellationToken)) =>
             SubscribeImpl(channels, cancellationToken, throwIfNotConnected: true);
 
         /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
-        public Task Unsubscribe(IEnumerable<string> channels, CancellationToken cancellationToken = default(CancellationToken)) =>
+        public Task Unsubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken = default(CancellationToken)) =>
             UnsubscribeImpl(channels, cancellationToken, throwIfNotConnected: true);
 
         #endregion
 
-        Task SubscribeImpl(IEnumerable<string> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
+        Task SubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
             subscriber.AddSubscription(channels);
             return RequestSubscribe(channels, cancellationToken, throwIfNotConnected);
         }
 
-        Task UnsubscribeImpl(IEnumerable<string> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
+        Task UnsubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
             subscriber.RemoveSubscription(channels);
             return RequestUnsubscribe(channels, cancellationToken, throwIfNotConnected);
         }
 
-        internal Task RequestSubscribe(IEnumerable<string> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
-            RequestSubscription(channels, Enumerable.Empty<string>(), cancellationToken, throwIfNotConnected);
+        internal Task RequestSubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
+            RequestSubscription(channels, Enumerable.Empty<ChannelId>(), cancellationToken, throwIfNotConnected);
 
-        Task RequestUnsubscribe(IEnumerable<string> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
-            RequestSubscription(Enumerable.Empty<string>(), channels, cancellationToken, throwIfNotConnected);
+        Task RequestUnsubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
+            RequestSubscription(Enumerable.Empty<ChannelId>(), channels, cancellationToken, throwIfNotConnected);
 
         async Task RequestSubscription(
-            IEnumerable<string> channelsToSubscribe,
-            IEnumerable<string> channelsToUnsubscribe,
+            IEnumerable<ChannelId> channelsToSubscribe,
+            IEnumerable<ChannelId> channelsToUnsubscribe,
             CancellationToken cancellationToken,
             bool throwIfNotConnected)
         {

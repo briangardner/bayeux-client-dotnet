@@ -1,15 +1,13 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Genesys.Bayeux.Client.BayeuxClient;
+using Genesys.Bayeux.Client.Channels;
 
 namespace Genesys.Bayeux.Client
 {
-    class BayeuxConnection
+    public class BayeuxConnection
     {
         readonly string clientId;
         readonly IBayeuxClientContext context;
@@ -50,8 +48,8 @@ namespace Genesys.Bayeux.Client
         }
 
         public Task DoSubscription(
-            IEnumerable<string> channelsToSubscribe, 
-            IEnumerable<string> channelsToUnsubscribe, 
+            IEnumerable<ChannelId> channelsToSubscribe, 
+            IEnumerable<ChannelId> channelsToUnsubscribe, 
             CancellationToken cancellationToken)
         {
             return context.RequestMany(

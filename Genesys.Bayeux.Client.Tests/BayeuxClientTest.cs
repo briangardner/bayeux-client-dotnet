@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Genesys.Bayeux.Client;
+using Genesys.Bayeux.Client.Channels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
@@ -257,7 +254,7 @@ namespace Genesys.Bayeux.Client.Tests
         {
             var httpPoster = new Mock<IHttpPost>();
             var bayeuxClient = new BayeuxClient(new HttpLongPollingTransportOptions() { HttpPost = httpPoster.Object, Uri = "none" });
-            await bayeuxClient.Subscribe("dummy");
+            await bayeuxClient.Subscribe(new ChannelId( "dummy"));
         }
 
         [TestMethod]
@@ -266,7 +263,7 @@ namespace Genesys.Bayeux.Client.Tests
         {
             var httpPoster = new Mock<IHttpPost>();
             var bayeuxClient = new BayeuxClient(new HttpLongPollingTransportOptions() { HttpPost = httpPoster.Object, Uri = "none" });
-            await bayeuxClient.Unsubscribe("dummy");
+            await bayeuxClient.Unsubscribe(new ChannelId("dummy"));
         }
 
         [TestMethod]
@@ -274,7 +271,7 @@ namespace Genesys.Bayeux.Client.Tests
         {
             var httpPoster = new Mock<IHttpPost>();
             var bayeuxClient = new BayeuxClient(new HttpLongPollingTransportOptions() { HttpPost = httpPoster.Object, Uri = "none" });
-            bayeuxClient.AddSubscriptions("dummy");
+            bayeuxClient.AddSubscriptions(new ChannelId("dummy"));
         }
 
         [TestMethod]
@@ -282,7 +279,7 @@ namespace Genesys.Bayeux.Client.Tests
         {
             var httpPoster = new Mock<IHttpPost>();
             var bayeuxClient = new BayeuxClient(new HttpLongPollingTransportOptions() { HttpPost = httpPoster.Object, Uri = "none" });
-            bayeuxClient.RemoveSubscriptions("dummy");
+            bayeuxClient.RemoveSubscriptions(new ChannelId("dummy"));
         }
 
         BayeuxClient CreateHttpBayeuxClient(HttpClient httpClient = null, string uri = Url)

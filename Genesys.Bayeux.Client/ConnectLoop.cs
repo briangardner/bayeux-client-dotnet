@@ -7,11 +7,12 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Genesys.Bayeux.Client.Channels;
 using static Genesys.Bayeux.Client.BayeuxClient;
 
 namespace Genesys.Bayeux.Client
 {
-    internal interface IBayeuxClientContext
+    public interface IBayeuxClientContext
     {
         Task Open(CancellationToken cancellationToken);
         Task<JObject> Request(object request, CancellationToken cancellationToken);

@@ -1,4 +1,6 @@
-﻿namespace Genesys.Bayeux.Client.Channels
+﻿using Newtonsoft.Json.Linq;
+
+namespace Genesys.Bayeux.Client.Channels
 {
     public abstract class ChannelExtension : AbstractChannel
     {
@@ -7,6 +9,5 @@
         {
             this.channel = channel;
         }
-
     }
 }
