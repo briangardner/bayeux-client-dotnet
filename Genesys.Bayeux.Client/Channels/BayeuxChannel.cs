@@ -6,11 +6,7 @@ namespace Genesys.Bayeux.Client.Channels
 {
     public class BayeuxChannel : AbstractChannel
     {
-        public BayeuxChannel(IBayeuxClientContext clientContext) : base(clientContext)
-        {
-        }
-
-        public BayeuxChannel(ChannelId id) : base(id)
+        public BayeuxChannel(IBayeuxClientContext clientContext, ChannelId id) : base(clientContext, id)
         {
         }
     }

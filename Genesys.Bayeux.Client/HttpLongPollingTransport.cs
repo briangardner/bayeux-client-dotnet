@@ -93,6 +93,8 @@ namespace Genesys.Bayeux.Client
                 if (channel == null)
                     throw new BayeuxProtocolException("No 'channel' field in message.");
 
+
+
                 if (channel.StartsWith("/meta/"))
                     responseObj = message;
                 else

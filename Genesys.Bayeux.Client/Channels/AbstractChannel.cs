@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Client.Channels
 {
-    public interface IChannel
+    public interface IChannel : IObservable<IMessage>
     {
         ChannelId ChannelId { get; }
 
@@ -19,22 +19,21 @@ namespace Genesys.Bayeux.Client.Channels
     {
         private readonly IBayeuxClientContext _clientContext;
         private readonly ILog _logger;
-        protected internal IList<IMessageListener> subscriptions ;
+        protected internal readonly IList<IObserver<IMessage>> observers;
 
-        protected AbstractChannel(IBayeuxClientContext clientContext)
+        protected AbstractChannel(IBayeuxClientContext clientContext, ChannelId id)
         {
+            observers = new List<IObserver<IMessage>>();
             _clientContext = clientContext;
             LogProvider.LogProviderResolvers.Add(
                 new Tuple<LogProvider.IsLoggerAvailable, LogProvider.CreateLogProvider>(() => true, () => new TraceSourceLogProvider()));
 
             _logger = LogProvider.GetLogger(typeof(AbstractChannel).Namespace);
-
-            subscriptions = new List<IMessageListener>();
-        }
-        protected AbstractChannel(ChannelId id)
-        {
             ChannelId = id;
+
         }
+
+        public IBayeuxClientContext ClientContext => _clientContext;
         public ChannelId ChannelId { get; private set; }
 
         protected internal async Task SendSubscribe()
@@ -59,20 +58,20 @@ namespace Genesys.Bayeux.Client.Channels
 
         protected virtual dynamic GetUnsubscribeMessage()
         {
-            return new
+            return new JObject
             {
-                channel = "/meta/unsubscribe",
-                subscription = ChannelId,
+                {"channel", "/meta/unsubscribe" } ,
+                { "subscription", ChannelId.ToString() }
             };
         }
 
         public void NotifyMessageListeners(IMessage message)
         {
-            foreach (var listener in subscriptions)
+            foreach (var listener in observers)
             {
                 try
                 {
-                    listener.OnMessage(this, message);
+                    listener.OnNext(message);
                 }
                 catch (Exception ex)
                 {
@@ -80,6 +79,18 @@ namespace Genesys.Bayeux.Client.Channels
                 }
             }
         }
-        
+
+        public IDisposable Subscribe(IObserver<IMessage> observer)
+        {
+            if (observers.Count == 0)
+            {
+                SendSubscribe().GetAwaiter().GetResult();
+            }
+            if (!observers.Contains(observer))
+                observers.Add(observer);
+            
+            return new Unsubscriber(this, observer);
+        }
+
     } 
 }

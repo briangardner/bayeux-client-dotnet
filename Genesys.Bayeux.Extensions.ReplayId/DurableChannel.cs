@@ -1,4 +1,5 @@
 ﻿using System;
+using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 using Newtonsoft.Json.Linq;
 
@@ -6,7 +7,7 @@ namespace Genesys.Bayeux.Extensions.ReplayId
 {
     public class DurableChannel : ChannelExtension
     {
-        public DurableChannel(AbstractChannel channel, int replayId) : base(channel)
+        public DurableChannel(AbstractChannel channel, long replayId) : base(channel.ClientContext, channel)
         {
             if (channel == null)
             {
@@ -15,7 +16,7 @@ namespace Genesys.Bayeux.Extensions.ReplayId
             ReplayId = replayId;
         }
 
-        public int ReplayId { get; set; }
+        public long ReplayId { get; set; }
 
         protected override JObject GetSubscribeMessage()
         {

@@ -8,6 +8,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Client.Messaging;
+using Newtonsoft.Json;
 using static Genesys.Bayeux.Client.Logging.LogProvider;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Tests")]
@@ -17,7 +19,7 @@ namespace Genesys.Bayeux.Client
     public class BayeuxClient : IDisposable, IBayeuxClientContext
     {
         internal static readonly ILog log;
-        internal Dictionary<string, AbstractChannel> Channels { get; } = new Dictionary<string, AbstractChannel>();
+        public Dictionary<string, AbstractChannel> Channels { get; } = new Dictionary<string, AbstractChannel>();
 
         static BayeuxClient()
         {
@@ -335,7 +337,10 @@ namespace Genesys.Bayeux.Client
             RunInEventTaskScheduler(() =>
             {
                 foreach (var ev in events)
-                    OnEventReceived(new EventReceivedArgs(ev));
+                {
+                    var channel = this.GetChannel((string) ev["channel"]);
+                    channel.NotifyMessageListeners(ev.ToObject<IMessage>());
+                }
             });
 
         void RunInEventTaskScheduler(Action action) =>
