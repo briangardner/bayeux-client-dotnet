@@ -333,18 +333,18 @@ namespace Genesys.Bayeux.Client
             return responseObj;
         }
 
-        void PublishEvents(IEnumerable<JObject> events) =>
-            RunInEventTaskScheduler(() =>
+        async Task PublishEvents(IEnumerable<JObject> events) =>
+            await RunInEventTaskScheduler(async () =>
             {
                 foreach (var ev in events)
                 {
                     var channel = this.GetChannel((string) ev["channel"]);
-                    channel.NotifyMessageListeners(ev.ToObject<IMessage>());
+                    await channel.NotifyMessageListeners(ev.ToObject<IMessage>()).ConfigureAwait(false);
                 }
-            });
+            }).ConfigureAwait(false);
 
-        void RunInEventTaskScheduler(Action action) =>
-            Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.DenyChildAttach, eventTaskScheduler);
+        async Task RunInEventTaskScheduler(Action action) =>
+            await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.DenyChildAttach, eventTaskScheduler).ConfigureAwait(false);
 
         Task IBayeuxClientContext.Open(CancellationToken cancellationToken)
             => transport.Open(cancellationToken);

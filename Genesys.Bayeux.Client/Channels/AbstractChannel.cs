@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Logging;
@@ -9,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Client.Channels
 {
-    public interface IChannel : IObservable<IMessage>
+    public interface IChannel :  IObservable<IMessage>
     {
         ChannelId ChannelId { get; }
 
@@ -19,11 +20,11 @@ namespace Genesys.Bayeux.Client.Channels
     {
         private readonly IBayeuxClientContext _clientContext;
         private readonly ILog _logger;
-        protected internal readonly IList<IObserver<IMessage>> observers;
+        protected internal readonly IList<IObserver<IMessage,Task>> observers;
 
         protected AbstractChannel(IBayeuxClientContext clientContext, ChannelId id)
         {
-            observers = new List<IObserver<IMessage>>();
+            observers = new List<IObserver<IMessage, Task>>();
             _clientContext = clientContext;
             LogProvider.LogProviderResolvers.Add(
                 new Tuple<LogProvider.IsLoggerAvailable, LogProvider.CreateLogProvider>(() => true, () => new TraceSourceLogProvider()));
@@ -65,13 +66,13 @@ namespace Genesys.Bayeux.Client.Channels
             };
         }
 
-        public void NotifyMessageListeners(IMessage message)
+        public async Task NotifyMessageListeners(IMessage message)
         {
             foreach (var listener in observers)
             {
                 try
                 {
-                    listener.OnNext(message);
+                    await listener.OnNext(message).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -80,7 +81,7 @@ namespace Genesys.Bayeux.Client.Channels
             }
         }
 
-        public IDisposable Subscribe(IObserver<IMessage> observer)
+        public IDisposable Subscribe(IObserver<IMessage, Task> observer)
         {
             if (observers.Count == 0)
             {

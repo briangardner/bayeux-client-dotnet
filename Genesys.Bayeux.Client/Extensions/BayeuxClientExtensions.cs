@@ -23,10 +23,5 @@ namespace Genesys.Bayeux.Client.Extensions
         {
             return new BayeuxChannel(client, channelId);
         } 
-
-        public static void Subscribe(this BayeuxClient client, AbstractChannel channel)
-        {
-
-        }
     }
 }
