@@ -1,15 +1,20 @@
-﻿using Genesys.Bayeux.Client.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Client.Logging;
+using Genesys.Bayeux.Client.Options;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace Genesys.Bayeux.Client
+namespace Genesys.Bayeux.Client.Connectivity
 {
     public interface IHttpPost
     {
@@ -40,19 +45,18 @@ namespace Genesys.Bayeux.Client
 
         readonly IHttpPost httpPost;
         readonly string url;
-        readonly Action<IEnumerable<JObject>> eventPublisher;
+        readonly Func<IEnumerable<JObject>,Task> eventPublisher;
 
-        public HttpLongPollingTransport(
-            IHttpPost httpPost, 
-            string url,
-            Action<IEnumerable<JObject>> eventPublisher)
+        public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options)
         {
-            this.httpPost = httpPost;
-            this.url = url;
-            this.eventPublisher = eventPublisher;
+            httpPost = options.Value.HttpClient != null ? new HttpClientHttpPost(options.Value.HttpClient) : options.Value.HttpPost;
+            this.url = options.Value.Uri;
+            Observers = new List<IObserver<JObject>>();
         }
 
         public void Dispose() { }
+
+        public IList<IObserver<JObject>> Observers { get; }
 
         public Task Open(CancellationToken cancellationToken)
             => Task.FromResult(0);
@@ -101,9 +105,20 @@ namespace Genesys.Bayeux.Client
                     events.Add(message);
             }
 
-            eventPublisher(events);
+            var observable = events.ToObservable();
+            foreach (var observer in Observers)
+            {
+                observable.Subscribe(observer);
+            }
 
             return responseObj;
+        }
+
+        public IDisposable Subscribe(IObserver<JObject> observer)
+        {
+            //TODO: Revisit this
+            Observers.Add(observer);
+            return Disposable.Empty;
         }
     }
 }

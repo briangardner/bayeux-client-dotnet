@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.WebSockets;
-using System.Text;
+using System.Threading.Tasks;
+using Genesys.Bayeux.Client.Connectivity;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
-namespace Genesys.Bayeux.Client
+namespace Genesys.Bayeux.Client.Options
 {
     public class HttpLongPollingTransportOptions
     {
@@ -34,27 +35,30 @@ namespace Genesys.Bayeux.Client
 
         public string Uri { get; set; }
 
-        internal HttpLongPollingTransport Build(Action<IEnumerable<JObject>> eventPublisher)
+        internal HttpLongPollingTransport Build()
         {
             if (Uri == null)
                 throw new Exception("Please set Uri.");
 
             if (HttpPost == null)
             {
-                return new HttpLongPollingTransport(
-                    new HttpClientHttpPost(HttpClient ?? new HttpClient()),
-                    Uri,
-                    eventPublisher);                    
+                return new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(
+                    new HttpLongPollingTransportOptions()
+                    {
+                        HttpPost = new HttpClientHttpPost(HttpClient ?? new HttpClient()),
+                        Uri = Uri
+                    }));
             }
             else
             {
                 if (HttpClient != null)
                     throw new Exception("Set HttpPost or HttpClient, but not both.");
 
-                return new HttpLongPollingTransport(
-                    HttpPost,
-                    Uri,
-                    eventPublisher);
+                return new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(new HttpLongPollingTransportOptions()
+                {
+                    HttpPost = HttpPost,
+                    Uri = Uri
+                }));
             }
         }        
     }

@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
+using Newtonsoft.Json.Linq;
 
-namespace Genesys.Bayeux.Client
+namespace Genesys.Bayeux.Client.Connectivity
 {
     public class BayeuxConnection
     {

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
 
 namespace Genesys.Bayeux.Client.Extensions
@@ -19,9 +21,10 @@ namespace Genesys.Bayeux.Client.Extensions
             return newChannel;
         }
 
-        public static AbstractChannel NewChannel(this BayeuxClient client, ChannelId channelId)
+        private static AbstractChannel NewChannel(this IBayeuxClientContext client, ChannelId channelId)
         {
             return new BayeuxChannel(client, channelId);
-        } 
+        }
+
     }
 }

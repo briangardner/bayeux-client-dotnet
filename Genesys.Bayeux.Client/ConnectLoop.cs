@@ -8,18 +8,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Client.Connectivity;
 using static Genesys.Bayeux.Client.BayeuxClient;
 
 namespace Genesys.Bayeux.Client
 {
-    public interface IBayeuxClientContext
-    {
-        Task Open(CancellationToken cancellationToken);
-        Task<JObject> Request(object request, CancellationToken cancellationToken);
-        Task<JObject> RequestMany(IEnumerable<object> requests, CancellationToken cancellationToken);
-        void SetConnectionState(ConnectionState newState);
-        void SetConnection(BayeuxConnection newConnection);
-    }
 
     class ConnectLoop : IDisposable
     {

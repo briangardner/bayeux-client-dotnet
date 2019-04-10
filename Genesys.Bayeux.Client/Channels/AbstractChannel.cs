@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Logging;
@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Client.Channels
 {
-    public interface IChannel :  IObservable<IMessage>
+    public interface IChannel : ISubject<IMessage>
     {
         ChannelId ChannelId { get; }
 
@@ -20,11 +20,11 @@ namespace Genesys.Bayeux.Client.Channels
     {
         private readonly IBayeuxClientContext _clientContext;
         private readonly ILog _logger;
-        protected internal readonly IList<IObserver<IMessage,Task>> observers;
+        protected internal readonly IList<IObserver<IMessage>> observers;
 
         protected AbstractChannel(IBayeuxClientContext clientContext, ChannelId id)
         {
-            observers = new List<IObserver<IMessage, Task>>();
+            observers = new List<IObserver<IMessage>>();
             _clientContext = clientContext;
             LogProvider.LogProviderResolvers.Add(
                 new Tuple<LogProvider.IsLoggerAvailable, LogProvider.CreateLogProvider>(() => true, () => new TraceSourceLogProvider()));
@@ -66,22 +66,8 @@ namespace Genesys.Bayeux.Client.Channels
             };
         }
 
-        public async Task NotifyMessageListeners(IMessage message)
-        {
-            foreach (var listener in observers)
-            {
-                try
-                {
-                    await listener.OnNext(message).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "Error in OnMessage for listener: {listener}", listener.GetType().FullName);
-                }
-            }
-        }
 
-        public IDisposable Subscribe(IObserver<IMessage, Task> observer)
+        public IDisposable Subscribe(IObserver<IMessage> observer)
         {
             if (observers.Count == 0)
             {
@@ -89,9 +75,50 @@ namespace Genesys.Bayeux.Client.Channels
             }
             if (!observers.Contains(observer))
                 observers.Add(observer);
-            
+
             return new Unsubscriber(this, observer);
         }
 
+        public async Task Unsubscribe(IObserver<IMessage> observer)
+        {
+            if (observer != null && this.observers.Contains(observer))
+                observers.Remove(observer);
+            if (observers.Count == 0)
+            {
+                await SendUnSubscribe().ConfigureAwait(false);
+            }
+        }
+
+        public async Task UnsubscribeAll()
+        {
+            observers.Clear();
+            await SendUnSubscribe().ConfigureAwait(false);
+
+        }
+
+        public void OnCompleted()
+        {
+            _logger.Info("Channel {channelId} completed.", ChannelId);
+        }
+
+        public void OnError(Exception error)
+        {
+            _logger.Error(error, "Error in {channelId} channel", ChannelId);
+        }
+
+        public void OnNext(IMessage message)
+        {
+            foreach (var listener in observers)
+            {
+                try
+                {
+                    listener.OnNext(message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Error in OnMessage for listener: {listener}", listener.GetType().FullName);
+                }
+            }
+        }
     } 
 }

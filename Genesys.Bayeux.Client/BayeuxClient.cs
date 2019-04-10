@@ -1,25 +1,25 @@
 ﻿using Genesys.Bayeux.Client.Logging;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Messaging;
-using Newtonsoft.Json;
+using Genesys.Bayeux.Client.Options;
 using static Genesys.Bayeux.Client.Logging.LogProvider;
-
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Tests")]
 
 namespace Genesys.Bayeux.Client
 {
-    public class BayeuxClient : IDisposable, IBayeuxClientContext
+    public class BayeuxClient : IDisposable, IBayeuxClientContext, IObserver<JObject>
     {
         internal static readonly ILog log;
-        public Dictionary<string, AbstractChannel> Channels { get; } = new Dictionary<string, AbstractChannel>();
+        public ConcurrentDictionary<string, AbstractChannel> Channels { get; } = new ConcurrentDictionary<string, AbstractChannel>();
 
         static BayeuxClient()
         {
@@ -29,12 +29,12 @@ namespace Genesys.Bayeux.Client
             log = LogProvider.GetLogger(typeof(BayeuxClient).Namespace);
         }
 
-        readonly IBayeuxTransport transport;
-        readonly TaskScheduler eventTaskScheduler;
-        readonly Subscriber subscriber;
-        readonly ConnectLoop connectLoop;
+        readonly IBayeuxTransport _transport;
+        readonly TaskScheduler _eventTaskScheduler;
+        readonly Subscriber _subscriber;
+        readonly ConnectLoop _connectLoop;
 
-        volatile BayeuxConnection currentConnection;
+        volatile BayeuxConnection _currentConnection;
 
         /// <param name="eventTaskScheduler">
         /// <para>
@@ -47,53 +47,20 @@ namespace Genesys.Bayeux.Client
         /// is null, then a new TaskScheduler with ordered execution will be created.
         /// </para>
         /// </param>
-        /// <param name="reconnectDelays">
+        /// <param name="delayOptions">
         /// When a request results in network errors, reconnection trials will be delayed based on the 
         /// values passed here. The last element of the collection will be re-used indefinitely.
         /// </param>
         public BayeuxClient(
-            HttpLongPollingTransportOptions options,
-            IEnumerable<TimeSpan> reconnectDelays = null,
+            IBayeuxTransport transport,
+            ReconnectDelayOptions delayOptions = null,
             TaskScheduler eventTaskScheduler = null)
         {
-            this.transport = options.Build(PublishEvents);
-            this.eventTaskScheduler = ChooseEventTaskScheduler(eventTaskScheduler);
-            this.connectLoop = new ConnectLoop("long-polling", reconnectDelays, this);
-            this.subscriber = new Subscriber(this);
-        }
-
-        public BayeuxClient(
-            WebSocketTransportOptions options,
-            IEnumerable<TimeSpan> reconnectDelays = null,
-            TaskScheduler eventTaskScheduler = null)
-        {
-            this.transport = options.Build(PublishEvents);
-            this.eventTaskScheduler = ChooseEventTaskScheduler(eventTaskScheduler);
-            this.connectLoop = new ConnectLoop("websocket", reconnectDelays, this);
-            this.subscriber = new Subscriber(this);
-        }
-
-        [Obsolete("Use constructor with HttpLongPollingTransportOptions")]
-        public BayeuxClient(
-            IHttpPost httpPost,
-            string url,
-            IEnumerable<TimeSpan> reconnectDelays = null,
-            TaskScheduler eventTaskScheduler = null)
-        {
-            this.transport = new HttpLongPollingTransport(httpPost, url, PublishEvents);
-            this.eventTaskScheduler = ChooseEventTaskScheduler(eventTaskScheduler);
-            this.connectLoop = new ConnectLoop("long-polling", reconnectDelays, this);
-            this.subscriber = new Subscriber(this);
-        }
-
-        [Obsolete("Use constructor with HttpLongPollingTransportOptions")]
-        public BayeuxClient(
-            HttpClient httpClient,
-            string url,
-            IEnumerable<TimeSpan> reconnectDelays = null,
-            TaskScheduler eventTaskScheduler = null)
-            : this(new HttpClientHttpPost(httpClient), url, reconnectDelays, eventTaskScheduler)
-        {
+            this._transport = transport;
+            transport.Observers.Add(this);
+            this._eventTaskScheduler = ChooseEventTaskScheduler(eventTaskScheduler);
+            this._connectLoop = new ConnectLoop("long-polling", delayOptions?.ReconnectDelays, this);
+            this._subscriber = new Subscriber(this);
         }
 
         static TaskScheduler ChooseEventTaskScheduler(TaskScheduler eventTaskScheduler)
@@ -120,20 +87,20 @@ namespace Genesys.Bayeux.Client
         /// Handshake does not support re-negotiation; it fails at first unsuccessful response.
         /// </summary>
         public Task Start(CancellationToken cancellationToken = default(CancellationToken)) =>
-            connectLoop.Start(cancellationToken);
+            _connectLoop.Start(cancellationToken);
 
         /// <summary>
         /// Does the Bayeux handshake, and starts long-polling in the background with reconnects as needed.
         /// This method does not fail.
         /// </summary>
         public void StartInBackground() =>
-            connectLoop.StartInBackground();
+            _connectLoop.StartInBackground();
 
         public async Task Stop(CancellationToken cancellationToken = default(CancellationToken))
         {
-            connectLoop.Dispose();
+            _connectLoop.Dispose();
 
-            var connection = Interlocked.Exchange(ref currentConnection, null);
+            var connection = Interlocked.Exchange(ref _currentConnection, null);
             if (connection != null)
                 await connection.Disconnect(cancellationToken);
         }
@@ -167,19 +134,19 @@ namespace Genesys.Bayeux.Client
 
         public event EventHandler<ConnectionStateChangedArgs> ConnectionStateChanged;
 
-        protected internal virtual void OnConnectionStateChanged(ConnectionState state)
+        protected internal virtual async Task OnConnectionStateChangedAsync(ConnectionState state)
         {
             var oldConnectionState = Interlocked.Exchange(ref currentConnectionState, (int) state);
 
             if (oldConnectionState != (int)state)
-                RunInEventTaskScheduler(() =>
-                    ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedArgs(state)));
+                await RunInEventTaskScheduler(() =>
+                    ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedArgs(state))).ConfigureAwait(false);
         }
 
         internal void SetNewConnection(BayeuxConnection newConnection)
         {
-            currentConnection = newConnection;
-            subscriber.OnConnected();
+            _currentConnection = newConnection;
+            _subscriber.OnConnected();
         }
 
         // On defining .NET events
@@ -206,10 +173,6 @@ namespace Genesys.Bayeux.Client
             public override string ToString() => ev.ToString();
         }
 
-        public event EventHandler<EventReceivedArgs> EventReceived;
-
-        protected virtual void OnEventReceived(EventReceivedArgs args)
-            => EventReceived?.Invoke(this, args);
 
         #region Public subscription methods
 
@@ -221,17 +184,6 @@ namespace Genesys.Bayeux.Client
         public void AddSubscriptions(params ChannelId[] channels) =>
             SubscribeImpl(channels, CancellationToken.None, throwIfNotConnected: false);
 
-        [Obsolete("Please use ChannelId type, instead of string")]
-        public void AddSubscriptions(params string[] channels)
-        {
-            var newChannels = new List<ChannelId>();
-            foreach (var channel in channels)
-            {
-                newChannels.Add(new ChannelId(channel));
-            }
-            AddSubscriptions(newChannels.ToArray());
-        }
-
         /// <summary>
         /// Removes subscriptions. Unsubscribes immediately if this BayeuxClient is connected.
         /// This is equivalent to <see cref="Unsubscribe(IEnumerable{ChannelId}, CancellationToken)"/>, but does not await result and does not throw an exception if disconnected.
@@ -240,16 +192,6 @@ namespace Genesys.Bayeux.Client
         public void RemoveSubscriptions(params ChannelId[] channels) =>
             UnsubscribeImpl(channels, CancellationToken.None, throwIfNotConnected: false);
 
-        [Obsolete("Please use ChannelId type, instead of string")]
-        public void RemoveSubscriptions(params string[] channels)
-        {
-            var newChannels = new List<ChannelId>();
-            foreach (var channel in channels)
-            {
-                newChannels.Add(new ChannelId(channel));
-            }
-            RemoveSubscriptions(newChannels.ToArray());
-        }
 
         /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
         public Task Subscribe(ChannelId channel, CancellationToken cancellationToken = default(CancellationToken)) =>
@@ -271,13 +213,13 @@ namespace Genesys.Bayeux.Client
 
         Task SubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
-            subscriber.AddSubscription(channels);
+            _subscriber.AddSubscription(channels);
             return RequestSubscribe(channels, cancellationToken, throwIfNotConnected);
         }
 
         Task UnsubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
-            subscriber.RemoveSubscription(channels);
+            _subscriber.RemoveSubscription(channels);
             return RequestUnsubscribe(channels, cancellationToken, throwIfNotConnected);
         }
 
@@ -293,7 +235,7 @@ namespace Genesys.Bayeux.Client
             CancellationToken cancellationToken,
             bool throwIfNotConnected)
         {
-            var connection = currentConnection;
+            var connection = _currentConnection;
             if (connection == null)
             {
                 if (throwIfNotConnected)
@@ -305,14 +247,6 @@ namespace Genesys.Bayeux.Client
             }
         }
 
-        #pragma warning disable 0649 // "Field is never assigned to". These fields will be assigned by JSON deserialization
-        class BayeuxResponse
-        {
-            public bool successful;
-            public string error;
-        }
-        #pragma warning restore 0649
-
         internal Task<JObject> Request(object request, CancellationToken cancellationToken)
         {
             Trace.Assert(!(request is System.Collections.IEnumerable), "Use method RequestMany");
@@ -323,7 +257,7 @@ namespace Genesys.Bayeux.Client
         {
             // https://docs.cometd.org/current/reference/#_messages
             // All Bayeux messages SHOULD be encapsulated in a JSON encoded array so that multiple messages may be transported together
-            var responseObj = await transport.Request(requests, cancellationToken);
+            var responseObj = await _transport.Request(requests, cancellationToken);
 
             var response = responseObj.ToObject<BayeuxResponse>();
 
@@ -333,21 +267,22 @@ namespace Genesys.Bayeux.Client
             return responseObj;
         }
 
-        async Task PublishEvents(IEnumerable<JObject> events) =>
-            await RunInEventTaskScheduler(async () =>
+        /*async Task PublishEvents(IEnumerable<JObject> events) =>
+            await RunInEventTaskScheduler(() =>
             {
-                foreach (var ev in events)
+                var observable = events.ToObservable();
+                observable.Subscribe((ev) =>
                 {
-                    var channel = this.GetChannel((string) ev["channel"]);
-                    await channel.NotifyMessageListeners(ev.ToObject<IMessage>()).ConfigureAwait(false);
-                }
-            }).ConfigureAwait(false);
+                    var channel = this.GetChannel((string)ev["channel"]);
+                    channel.OnNext(ev.ToObject<IMessage>());
+                });
+            }).ConfigureAwait(false);*/
 
         async Task RunInEventTaskScheduler(Action action) =>
-            await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.DenyChildAttach, eventTaskScheduler).ConfigureAwait(false);
+            await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.DenyChildAttach, _eventTaskScheduler).ConfigureAwait(false);
 
         Task IBayeuxClientContext.Open(CancellationToken cancellationToken)
-            => transport.Open(cancellationToken);
+            => _transport.Open(cancellationToken);
 
         Task<JObject> IBayeuxClientContext.Request(object request, CancellationToken cancellationToken)
             => Request(request, cancellationToken);
@@ -355,10 +290,26 @@ namespace Genesys.Bayeux.Client
         Task<JObject> IBayeuxClientContext.RequestMany(IEnumerable<object> requests, CancellationToken cancellationToken)
             => RequestMany(requests, cancellationToken);
 
-        void IBayeuxClientContext.SetConnectionState(ConnectionState newState)
-            => OnConnectionStateChanged(newState);
+        Task IBayeuxClientContext.SetConnectionState(ConnectionState newState)
+            => OnConnectionStateChangedAsync(newState);
 
         void IBayeuxClientContext.SetConnection(BayeuxConnection newConnection)
             => SetNewConnection(newConnection);
+
+        public void OnCompleted()
+        {
+            //do nothing
+        }
+
+        public void OnError(Exception error)
+        {
+            log.Log(LogLevel.Error, () => "Error with message", error);
+        }
+
+        public void OnNext(JObject value)
+        {
+            var channel = this.GetChannel((string) value["channel"]);
+            channel.OnNext(value.ToObject<IMessage>());
+        }
     }
 }

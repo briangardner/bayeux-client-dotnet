@@ -1,35 +1,35 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using Genesys.Bayeux.Client.Channels;
-using static Genesys.Bayeux.Client.BayeuxClient;
+using Genesys.Bayeux.Client.Extensions;
 
 namespace Genesys.Bayeux.Client
 {
     class Subscriber
     {
-        readonly BayeuxClient client;
-        readonly ChannelList subscribedChannels = new ChannelList();
+        readonly BayeuxClient _client;
+        readonly ChannelList _subscribedChannels = new ChannelList();
 
         public Subscriber(BayeuxClient client)
         {
-            this.client = client;
+            this._client = client;
         }
 
         public void AddSubscription(IEnumerable<ChannelId> channels) =>
-            subscribedChannels.Add(channels);
+            _subscribedChannels.Add(channels);
 
         public void RemoveSubscription(IEnumerable<ChannelId> channels) =>
-            subscribedChannels.Remove(channels);
+            _subscribedChannels.Remove(channels);
 
         public void OnConnected()
         {
-            var resubscribeChannels = subscribedChannels.Copy();
+            var resubscribeChannels = _subscribedChannels.Copy();
 
-            if (resubscribeChannels.Count != 0)
-                _ = client.RequestSubscribe(resubscribeChannels, CancellationToken.None, throwIfNotConnected: false);
+            foreach (var channelId in resubscribeChannels)
+            {
+                var channel = _client.GetChannel(channelId.ToString());
+                channel.SendSubscribe().GetAwaiter().GetResult();
+            }
         }
 
         class ChannelList
