@@ -16,7 +16,8 @@ namespace Genesys.Bayeux.Client.Channels
 
         public void Dispose()
         {
-            _channel.Unsubscribe(_observer);
+            //TODO: Revisit this
+            _channel.Unsubscribe(_observer).GetAwaiter().GetResult();
         }
     }
 }

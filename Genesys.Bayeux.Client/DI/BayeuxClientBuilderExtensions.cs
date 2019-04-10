@@ -38,5 +38,17 @@ namespace Genesys.Bayeux.Client.DI
             builder.Services.AddTransient<IBayeuxTransport, WebSocketTransport>();
             return new WebSocketsPollingClientBuilder(builder.Services);
         }
+
+        public static IBayeuxClientBuilder AddBayeuxClient(this IServiceCollection services)
+        {
+            if(services == null) throw new ArgumentNullException(nameof(services));
+            AddServices(services);
+            return new BayeuxClientBuilder(services);
+        }
+
+        private static void AddServices(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<IBayeuxClientContext, BayeuxClient>();
+        }
     }
 }

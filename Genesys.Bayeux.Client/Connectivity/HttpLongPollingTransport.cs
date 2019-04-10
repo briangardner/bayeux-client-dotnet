@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Logging;
 using Genesys.Bayeux.Client.Options;
 using Microsoft.Extensions.Options;
@@ -41,16 +39,16 @@ namespace Genesys.Bayeux.Client.Connectivity
 
     class HttpLongPollingTransport : IBayeuxTransport
     {
-        static readonly ILog log = BayeuxClient.log;
+        private static readonly ILog Log = BayeuxClient.log;
 
-        readonly IHttpPost httpPost;
-        readonly string url;
+        readonly IHttpPost _httpPost;
+        readonly string _url;
         readonly Func<IEnumerable<JObject>,Task> eventPublisher;
 
         public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options)
         {
-            httpPost = options.Value.HttpClient != null ? new HttpClientHttpPost(options.Value.HttpClient) : options.Value.HttpPost;
-            this.url = options.Value.Uri;
+            _httpPost = options.Value.HttpClient != null ? new HttpClientHttpPost(options.Value.HttpClient) : options.Value.HttpPost;
+            _url = options.Value.Uri;
             Observers = new List<IObserver<JObject>>();
         }
 
@@ -64,20 +62,20 @@ namespace Genesys.Bayeux.Client.Connectivity
         public async Task<JObject> Request(IEnumerable<object> requests, CancellationToken cancellationToken)
         {
             var messageStr = JsonConvert.SerializeObject(requests);
-            log.Debug(() => $"Posting: {messageStr}");
+            Log.Debug(() => $"Posting: {messageStr}");
 
-            var httpResponse = await httpPost.PostAsync(url, messageStr, cancellationToken);
+            var httpResponse = await _httpPost.PostAsync(_url, messageStr, cancellationToken).ConfigureAwait(false);
 
             if (!httpResponse.IsSuccessStatusCode)
             {
-                var responseStr = await httpResponse.Content.ReadAsStringAsync();
-                log.Debug(() => $"Received: {responseStr}");
+                var responseStr = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                Log.Debug(() => $"Received: {responseStr}");
             }
 
             httpResponse.EnsureSuccessStatusCode();
 
-            var responseToken = JToken.ReadFrom(new JsonTextReader(new StreamReader(await httpResponse.Content.ReadAsStreamAsync())));
-            log.Debug(() => $"Received: {responseToken.ToString(Formatting.None)}");
+            var responseToken = JToken.ReadFrom(new JsonTextReader(new StreamReader(await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))));
+            Log.Debug(() => $"Received: {responseToken.ToString(Formatting.None)}");
             
             IEnumerable<JToken> tokens = responseToken is JArray ?
                 (IEnumerable<JToken>)responseToken :
@@ -114,11 +112,5 @@ namespace Genesys.Bayeux.Client.Connectivity
             return responseObj;
         }
 
-        public IDisposable Subscribe(IObserver<JObject> observer)
-        {
-            //TODO: Revisit this
-            Observers.Add(observer);
-            return Disposable.Empty;
-        }
     }
 }

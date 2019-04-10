@@ -243,7 +243,9 @@ namespace Genesys.Bayeux.Client
             }
             else
             {
-                await connection.DoSubscription(channelsToSubscribe, channelsToUnsubscribe, cancellationToken);
+                var messages = channelsToSubscribe.Select(ch => this.GetChannel(ch.ToString()).GetSubscribeMessage())
+                    .Concat(channelsToUnsubscribe.Select(ch => this.GetChannel(ch.ToString()).GetUnsubscribeMessage()));
+                await RequestMany(messages,cancellationToken).ConfigureAwait(false);
             }
         }
 

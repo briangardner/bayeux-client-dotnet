@@ -22,52 +22,28 @@ namespace Genesys.Bayeux.Client.Connectivity
         
         public async Task<JObject> Connect(CancellationToken cancellationToken)
         {
-            var response = await context.Request(
-                new
-                {
-                    clientId,
-                    channel = "/meta/connect",
-                    connectionType = "long-polling",
-                },
-                cancellationToken);
+            var request = new JObject()
+            {
+                {"clientId", clientId }, {"channel", "/meta/connect"}, {"connectionType", "long-polling"}
+            };
+            var response = await context.Request(request,
+                cancellationToken).ConfigureAwait(false);
 
-            context.SetConnectionState(BayeuxClient.ConnectionState.Connected);
+            await context.SetConnectionState(BayeuxClient.ConnectionState.Connected).ConfigureAwait(false);
 
             return response;
         }
 
         public Task Disconnect(CancellationToken cancellationToken)
         {
+            var request = new JObject()
+            {
+                {"clientId", clientId }, {"channel", "/meta/disconnect"}
+            };
             return context.Request(
-                new
-                {
-                    clientId,
-                    channel = "/meta/disconnect",
-                },
+                request,
                 cancellationToken);
         }
 
-        public Task DoSubscription(
-            IEnumerable<ChannelId> channelsToSubscribe, 
-            IEnumerable<ChannelId> channelsToUnsubscribe, 
-            CancellationToken cancellationToken)
-        {
-            return context.RequestMany(
-                channelsToSubscribe.Select(channel =>
-                    new
-                    {
-                        clientId,
-                        channel = "/meta/subscribe",
-                        subscription = channel,
-                    })
-                    .Concat(channelsToUnsubscribe.Select(channel =>
-                    new
-                    {
-                        clientId,
-                        channel = "/meta/unsubscribe",
-                        subscription = channel,
-                    })),
-                cancellationToken);
-        }
     }
 }
