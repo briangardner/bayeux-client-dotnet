@@ -4,11 +4,10 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Messaging;
 using static Genesys.Bayeux.Client.BayeuxClient;
 
 namespace Genesys.Bayeux.Client
@@ -124,7 +123,7 @@ namespace Genesys.Bayeux.Client
                 }
                 else switch (lastAdvice.reconnect)
                     {
-                        case "none":
+                        case MessageFields.RECONNECT_NONE_VALUE:
                             log.Info("Long-polling stopped on server request.");
                             Dispose();
                             break;
@@ -137,13 +136,13 @@ namespace Genesys.Bayeux.Client
                         // another sample advice, when too much time without polling:
                         // [{"advice":{"interval":0,"reconnect":"handshake"},"channel":"/meta/connect","error":"402::Unknown client","successful":false}]
 
-                        case "handshake":
+                        case MessageFields.RECONNECT_HANDSHAKE_VALUE:
                             log.Info($"Re-handshaking after {lastAdvice.interval} ms on server request.");
                             await Task.Delay(lastAdvice.interval);
                             await Handshake(pollCancel.Token);
                             break;
 
-                        case "retry":
+                        case MessageFields.RECONNECT_RETRY_VALUE:
                         default:
                             if (lastAdvice.interval > 0)
                                 log.Info($"Re-connecting after {lastAdvice.interval} ms on server request.");
@@ -193,7 +192,7 @@ namespace Genesys.Bayeux.Client
                 },
                 cancellationToken);
 
-            currentConnection = new BayeuxConnection((string)response["clientId"], context);
+            currentConnection = new BayeuxConnection((string)response[MessageFields.CLIENT_ID_FIELD], context);
             context.SetConnection(currentConnection);
             context.SetConnectionState(ConnectionState.Connected);
             ObtainAdvice(response);
@@ -208,7 +207,7 @@ namespace Genesys.Bayeux.Client
 
         void ObtainAdvice(JObject response)
         {
-            var adviceToken = response["advice"];
+            var adviceToken = response[MessageFields.ADVICE_FIELD];
             if (adviceToken != null)
                 lastAdvice = adviceToken.ToObject<BayeuxAdvice>();
         }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,14 +17,13 @@ namespace Genesys.Bayeux.Client.Channels
 
     public abstract class AbstractChannel : IChannel
     {
-        private readonly IBayeuxClientContext _clientContext;
         private readonly ILog _logger;
         protected internal readonly IList<IObserver<IMessage>> observers;
 
         protected AbstractChannel(IBayeuxClientContext clientContext, ChannelId id)
         {
             observers = new List<IObserver<IMessage>>();
-            _clientContext = clientContext;
+            ClientContext = clientContext;
             LogProvider.LogProviderResolvers.Add(
                 new Tuple<LogProvider.IsLoggerAvailable, LogProvider.CreateLogProvider>(() => true, () => new TraceSourceLogProvider()));
 
@@ -34,25 +32,25 @@ namespace Genesys.Bayeux.Client.Channels
 
         }
 
-        public IBayeuxClientContext ClientContext => _clientContext;
+        public IBayeuxClientContext ClientContext { get; }
         public ChannelId ChannelId { get; private set; }
 
         protected internal async Task SendSubscribe()
         {
-            await _clientContext.Request(GetSubscribeMessage(), new CancellationToken());
+            await ClientContext.Request(GetSubscribeMessage(), new CancellationToken()).ConfigureAwait(false);
         }
 
         protected internal async Task SendUnSubscribe()
         {
-            await _clientContext.Request(GetUnsubscribeMessage(), new CancellationToken());
+            await ClientContext.Request(GetUnsubscribeMessage(), new CancellationToken()).ConfigureAwait(false);
         }
 
         internal virtual JObject GetSubscribeMessage()
         {
             var message = new JObject
             {
-                {"channel", "/meta/subscribe"},
-                { "subscription", ChannelId.ToString()}
+                {MessageFields.CHANNEL_FIELD, "/meta/subscribe"},
+                { MessageFields.SUBSCRIPTION_FIELD, ChannelId.ToString()}
             };
             return message;
         }
@@ -61,8 +59,8 @@ namespace Genesys.Bayeux.Client.Channels
         {
             return new JObject
             {
-                {"channel", "/meta/unsubscribe" } ,
-                { "subscription", ChannelId.ToString() }
+                {MessageFields.CHANNEL_FIELD, "/meta/unsubscribe" } ,
+                { MessageFields.SUBSCRIPTION_FIELD, ChannelId.ToString() }
             };
         }
 
@@ -116,7 +114,7 @@ namespace Genesys.Bayeux.Client.Channels
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Error in OnMessage for listener: {listener}", listener.GetType().FullName);
+                    _logger.Error(ex, "Error in OnMessage for listener: {listener}.  Message {@message}", listener.GetType().FullName, message);
                 }
             }
         }

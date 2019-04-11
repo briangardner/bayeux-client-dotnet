@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Messaging;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -23,7 +24,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
             var connection = new BayeuxConnection(_clientId, context.Object);
 
             await connection.Connect(CancellationToken.None).ConfigureAwait(false);
-            Assert.Equal(_clientId.ToString(), request["clientId"]);
+            Assert.Equal(_clientId.ToString(), request[MessageFields.CLIENT_ID_FIELD]);
         }
 
         [Fact]
@@ -34,7 +35,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
             var connection = new BayeuxConnection(_clientId, context.Object);
 
             await connection.Connect(CancellationToken.None).ConfigureAwait(false);
-            Assert.Equal("/meta/connect", request["channel"]);
+            Assert.Equal("/meta/connect", request[MessageFields.CHANNEL_FIELD]);
         }
 
         [Fact]
@@ -45,7 +46,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
             var connection = new BayeuxConnection(_clientId, context.Object);
 
             await connection.Connect(CancellationToken.None).ConfigureAwait(false);
-            Assert.Equal("long-polling", request["connectionType"]);
+            Assert.Equal("long-polling", request[MessageFields.CONNECTION_TYPE_FIELD]);
         }
 
         [Fact]

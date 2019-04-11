@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -115,17 +116,17 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
 
         private JToken MetaResponse => new JObject()
         {
-            {"channel", "/meta/testing" }, {"clientId", "123"}
+            {MessageFields.CHANNEL_FIELD, "/meta/testing" }, {MessageFields.CLIENT_ID_FIELD, "123"}
         };
 
         private JToken EventResponse => new JObject()
         {
-            {"channel", "/some/testing" }, {"clientId", "123"}, {"messageId", Guid.NewGuid().ToString()}
+            {MessageFields.CHANNEL_FIELD, "/some/testing" }, {MessageFields.CLIENT_ID_FIELD, "123"}, {"messageId", Guid.NewGuid().ToString()}
         };
 
         private JToken ErrorEventResponse => new JObject()
         {
-            {"clientId", "123"}, {"messageId", Guid.NewGuid().ToString()}
+            {MessageFields.CHANNEL_FIELD, "123"}, {"messageId", Guid.NewGuid().ToString()}
         };
 
 

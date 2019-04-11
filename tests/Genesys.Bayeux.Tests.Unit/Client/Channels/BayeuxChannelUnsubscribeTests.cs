@@ -61,7 +61,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
             var unsubscriber1 = channel.Subscribe(subscriber1);
             unsubscriber1.Dispose();
-            Assert.Equal("/meta/unsubscribe", _unsubscribeMessage["channel"]);
+            Assert.Equal("/meta/unsubscribe", _unsubscribeMessage[MessageFields.CHANNEL_FIELD]);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
             var unsubscriber1 = channel.Subscribe(subscriber1);
             unsubscriber1.Dispose();
-            Assert.Equal(_channelId.ToString(), _unsubscribeMessage["subscription"]);
+            Assert.Equal(_channelId.ToString(), _unsubscribeMessage[MessageFields.SUBSCRIPTION_FIELD]);
         }
     }
 }

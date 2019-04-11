@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Logging;
+using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -90,7 +91,7 @@ namespace Genesys.Bayeux.Client.Connectivity
             foreach (var token in tokens)
             {
                 JObject message = (JObject)token;
-                var channel = (string)message["channel"];
+                var channel = (string)message[MessageFields.CHANNEL_FIELD];
 
                 if (channel == null)
                     throw new BayeuxProtocolException("No 'channel' field in message.");
