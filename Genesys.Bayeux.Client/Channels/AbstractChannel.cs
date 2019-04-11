@@ -45,7 +45,7 @@ namespace Genesys.Bayeux.Client.Channels
             await ClientContext.Request(GetUnsubscribeMessage(), new CancellationToken()).ConfigureAwait(false);
         }
 
-        internal virtual JObject GetSubscribeMessage()
+        public virtual JObject GetSubscribeMessage()
         {
             var message = new JObject
             {
@@ -55,7 +55,7 @@ namespace Genesys.Bayeux.Client.Channels
             return message;
         }
 
-        internal virtual dynamic GetUnsubscribeMessage()
+        public virtual dynamic GetUnsubscribeMessage()
         {
             return new JObject
             {

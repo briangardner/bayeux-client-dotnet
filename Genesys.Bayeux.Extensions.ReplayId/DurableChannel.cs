@@ -18,7 +18,7 @@ namespace Genesys.Bayeux.Extensions.ReplayId
 
         public long ReplayId { get; set; }
 
-        protected override JObject GetSubscribeMessage()
+        public override JObject GetSubscribeMessage()
         {
             var msg = base.GetSubscribeMessage();
             msg.Add("replayid", ReplayId);
