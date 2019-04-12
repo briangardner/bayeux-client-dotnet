@@ -1,10 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- netstandard1.0;net40 - Minimum for System.Threading.Tasks.Task -->
-    <!-- netstandard1.1;net45 - Minimum for System.Net.Http.HttpClient -->
-    <!-- netstandard2.0;net20 - Minimum for System.Diagnostics.TraceSource -->
-    <!-- netstandard2.0;net452 - Minimum versions for LibLog included code files -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Genesys.Bayeux.Client</AssemblyName>
     <RootNamespace>Genesys.Bayeux.Client</RootNamespace>

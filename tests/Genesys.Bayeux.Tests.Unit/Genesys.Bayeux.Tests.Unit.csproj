@@ -17,4 +17,8 @@
     <ProjectReference Include="..\..\Genesys.Bayeux.Client\Genesys.Bayeux.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\ReplayId\" />
+  </ItemGroup>
+
 </Project>

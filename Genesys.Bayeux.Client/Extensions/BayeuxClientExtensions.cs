@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Genesys.Bayeux.Client.Channels;
+﻿using Genesys.Bayeux.Client.Channels;
 
 namespace Genesys.Bayeux.Client.Extensions
 {
@@ -18,6 +13,7 @@ namespace Genesys.Bayeux.Client.Extensions
             }
             var newChannelId = new ChannelId(channelId);
             var newChannel = client.NewChannel(newChannelId);
+            client.Channels.TryAdd(channelId, newChannel);
             return newChannel;
         }
 

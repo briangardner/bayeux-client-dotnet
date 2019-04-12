@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Client.Messaging
 {
-    public abstract class MessageExtension : Dictionary<string, object>, IMutableMessage
+    public abstract class MessageExtension : Dictionary<string, object>, IMessage
     {
         private IMutableMessage _message;
 

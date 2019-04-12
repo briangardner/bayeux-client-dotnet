@@ -29,10 +29,10 @@ namespace Genesys.Bayeux.Client
             log = LogProvider.GetLogger(typeof(BayeuxClient).Namespace);
         }
 
-        readonly IBayeuxTransport _transport;
-        readonly TaskScheduler _eventTaskScheduler;
-        readonly Subscriber _subscriber;
-        readonly ConnectLoop _connectLoop;
+        private readonly IBayeuxTransport _transport;
+        private readonly TaskScheduler _eventTaskScheduler;
+        private readonly Subscriber _subscriber;
+        private readonly ConnectLoop _connectLoop;
 
         volatile BayeuxConnection _currentConnection;
 
