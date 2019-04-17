@@ -6,27 +6,27 @@ namespace Genesys.Bayeux.Client.Messaging
 {
     public static class MessageFields
     {
-        public const string ADVICE_FIELD = "advice";
-        public const string CHANNEL_FIELD = "channel";
-        public const string CLIENT_ID_FIELD = "clientId";
-        public const string CONNECTION_TYPE_FIELD = "connectionType";
-        public const string DATA_FIELD = "data";
-        public const string EVENT_FIELD = "event";
-        public const string REPLAY_ID_FIELD = "replayId";
-        public const string ERROR_FIELD = "error";
-        public const string EXT_FIELD = "ext";
-        public const string ID_FIELD = "id";
-        public const string INTERVAL_FIELD = "interval";
-        public const string MIN_VERSION_FIELD = "minimumVersion";
-        public const string RECONNECT_FIELD = "reconnect";
-        public const string RECONNECT_HANDSHAKE_VALUE = "handshake";
-        public const string RECONNECT_NONE_VALUE = "none";
-        public const string RECONNECT_RETRY_VALUE = "retry";
-        public const string SUBSCRIPTION_FIELD = "subscription";
-        public const string SUCCESSFUL_FIELD = "successful";
-        public const string SUPPORTED_CONNECTION_TYPES_FIELD = "supportedConnectionTypes";
-        public const string TIMESTAMP_FIELD = "timestamp";
-        public const string TRANSPORT_FIELD = "transport";
-        public const string VERSION_FIELD = "version";
+        public const string AdviceField = "advice";
+        public const string ChannelField = "channel";
+        public const string ClientIdField = "clientId";
+        public const string ConnectionTypeField = "connectionType";
+        public const string DataField = "data";
+        public const string EventField = "event";
+        public const string ReplayIdField = "replayId";
+        public const string ErrorField = "error";
+        public const string ExtField = "ext";
+        public const string IdField = "id";
+        public const string IntervalField = "interval";
+        public const string MinVersionField = "minimumVersion";
+        public const string ReconnectField = "reconnect";
+        public const string ReconnectHandshakeValue = "handshake";
+        public const string ReconnectNoneValue = "none";
+        public const string ReconnectRetryValue = "retry";
+        public const string SubscriptionField = "subscription";
+        public const string SuccessfulField = "successful";
+        public const string SupportedConnectionTypesField = "supportedConnectionTypes";
+        public const string TimestampField = "timestamp";
+        public const string TransportField = "transport";
+        public const string VersionField = "version";
     }
 }

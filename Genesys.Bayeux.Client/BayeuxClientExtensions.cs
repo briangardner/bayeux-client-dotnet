@@ -1,4 +1,6 @@
-﻿using Genesys.Bayeux.Client.Channels;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Genesys.Bayeux.Client.Channels;
 
 namespace Genesys.Bayeux.Client.Extensions
 {

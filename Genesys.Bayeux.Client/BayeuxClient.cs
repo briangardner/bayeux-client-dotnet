@@ -9,16 +9,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Enums;
+using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Extensions;
-using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
 using static Genesys.Bayeux.Client.Logging.LogProvider;
 
 namespace Genesys.Bayeux.Client
 {
-    public class BayeuxClient : IDisposable, IBayeuxClientContext, IObserver<JObject>
+    public class BayeuxClient : IDisposable, IBayeuxClientContext
     {
-        internal static readonly ILog log;
+        internal static readonly ILog Log;
         public ConcurrentDictionary<string, AbstractChannel> Channels { get; } = new ConcurrentDictionary<string, AbstractChannel>();
 
         static BayeuxClient()
@@ -26,13 +27,14 @@ namespace Genesys.Bayeux.Client
             LogProvider.LogProviderResolvers.Add(
                 new Tuple<IsLoggerAvailable, CreateLogProvider>(() => true, () => new TraceSourceLogProvider()));
 
-            log = LogProvider.GetLogger(typeof(BayeuxClient).Namespace);
+            Log = LogProvider.GetLogger(typeof(BayeuxClient).Namespace);
         }
 
         private readonly IBayeuxTransport _transport;
         private readonly TaskScheduler _eventTaskScheduler;
         private readonly Subscriber _subscriber;
         private readonly ConnectLoop _connectLoop;
+        private readonly IList<IExtension> _extensions;
 
         volatile BayeuxConnection _currentConnection;
 
@@ -57,7 +59,6 @@ namespace Genesys.Bayeux.Client
             TaskScheduler eventTaskScheduler = null)
         {
             this._transport = transport;
-            transport.Observers.Add(this);
             this._eventTaskScheduler = ChooseEventTaskScheduler(eventTaskScheduler);
             this._connectLoop = new ConnectLoop("long-polling", delayOptions?.ReconnectDelays, this);
             this._subscriber = new Subscriber(this);
@@ -70,12 +71,12 @@ namespace Genesys.Bayeux.Client
             
             if (SynchronizationContext.Current != null)
             {
-                log.Info($"Using current SynchronizationContext for events: {SynchronizationContext.Current}");
+                Log.Info($"Using current SynchronizationContext for events: {SynchronizationContext.Current}");
                 return TaskScheduler.FromCurrentSynchronizationContext();
             }
             else
             {
-                log.Info("Using a new TaskScheduler with ordered execution for events.");
+                Log.Info("Using a new TaskScheduler with ordered execution for events.");
                 return new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler;
             }
         }
@@ -102,21 +103,15 @@ namespace Genesys.Bayeux.Client
 
             var connection = Interlocked.Exchange(ref _currentConnection, null);
             if (connection != null)
-                await connection.Disconnect(cancellationToken);
+                await connection.Disconnect(cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()
         {
-            _ = Stop();
+            Stop().GetAwaiter().GetResult();
         }
 
-        public enum ConnectionState
-        {
-            Disconnected,
-            Connecting,
-            Connected,
-            DisconnectedOnError,
-        }
+        
 
         public class ConnectionStateChangedArgs : EventArgs
         {
@@ -188,14 +183,16 @@ namespace Genesys.Bayeux.Client
 
         Task SubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
-            _subscriber.AddSubscription(channels);
-            return RequestSubscribe(channels, cancellationToken, throwIfNotConnected);
+            var channelIds = channels as ChannelId[] ?? channels.ToArray();
+            _subscriber.AddSubscription(channelIds);
+            return RequestSubscribe(channelIds, cancellationToken, throwIfNotConnected);
         }
 
         Task UnsubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
-            _subscriber.RemoveSubscription(channels);
-            return RequestUnsubscribe(channels, cancellationToken, throwIfNotConnected);
+            var channelIds = channels as ChannelId[] ?? channels.ToArray();
+            _subscriber.RemoveSubscription(channelIds);
+            return RequestUnsubscribe(channelIds, cancellationToken, throwIfNotConnected);
         }
 
         internal Task RequestSubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
@@ -234,7 +231,7 @@ namespace Genesys.Bayeux.Client
         {
             // https://docs.cometd.org/current/reference/#_messages
             // All Bayeux messages SHOULD be encapsulated in a JSON encoded array so that multiple messages may be transported together
-            var responseObj = await _transport.Request(requests, cancellationToken);
+            var responseObj = await _transport.Request(requests, cancellationToken).ConfigureAwait(false);
 
             var response = responseObj.ToObject<BayeuxResponse>();
 
@@ -243,17 +240,6 @@ namespace Genesys.Bayeux.Client
 
             return responseObj;
         }
-
-        /*async Task PublishEvents(IEnumerable<JObject> events) =>
-            await RunInEventTaskScheduler(() =>
-            {
-                var observable = events.ToObservable();
-                observable.Subscribe((ev) =>
-                {
-                    var channel = this.GetChannel((string)ev["channel"]);
-                    channel.OnNext(ev.ToObject<IMessage>());
-                });
-            }).ConfigureAwait(false);*/
 
         async Task RunInEventTaskScheduler(Action action) =>
             await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.DenyChildAttach, _eventTaskScheduler).ConfigureAwait(false);
@@ -272,21 +258,5 @@ namespace Genesys.Bayeux.Client
 
         void IBayeuxClientContext.SetConnection(BayeuxConnection newConnection)
             => SetNewConnection(newConnection);
-
-        public void OnCompleted()
-        {
-            //do nothing
-        }
-
-        public void OnError(Exception error)
-        {
-            log.Log(LogLevel.Error, () => "Error with message", error);
-        }
-
-        public void OnNext(JObject value)
-        {
-            var channel = this.GetChannel((string) value[MessageFields.CHANNEL_FIELD]);
-            channel.OnNext(value.ToObject<IMessage>());
-        }
     }
 }

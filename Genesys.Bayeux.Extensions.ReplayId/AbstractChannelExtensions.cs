@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 
 namespace Genesys.Bayeux.Extensions.ReplayId
@@ -11,5 +12,6 @@ namespace Genesys.Bayeux.Extensions.ReplayId
         {
             return new DurableChannel(channel, replayId);
         }
+
     }
 }

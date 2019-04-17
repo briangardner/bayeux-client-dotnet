@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Logging;
 using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
@@ -15,47 +15,22 @@ using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Client.Connectivity
 {
-    public interface IHttpPost
+    internal class HttpLongPollingTransport : IBayeuxTransport
     {
-        Task<HttpResponseMessage> PostAsync(string requestUri, string jsonContent, CancellationToken cancellationToken);
-    }
-
-    public class HttpClientHttpPost : IHttpPost
-    {
-        readonly HttpClient httpClient;
-
-        public HttpClientHttpPost(HttpClient httpClient)
-        {
-            this.httpClient = httpClient;
-        }
-
-        public Task<HttpResponseMessage> PostAsync(string requestUri, string jsonContent, CancellationToken cancellationToken)
-        {
-            return httpClient.PostAsync(
-                requestUri,
-                new StringContent(jsonContent, Encoding.UTF8, "application/json"),
-                cancellationToken);
-        }
-    }
-
-    class HttpLongPollingTransport : IBayeuxTransport
-    {
-        private static readonly ILog Log = BayeuxClient.log;
+        private static readonly ILog Log = BayeuxClient.Log;
 
         readonly IHttpPost _httpPost;
         readonly string _url;
-        readonly Func<IEnumerable<JObject>,Task> eventPublisher;
+        private readonly IList<IObserver<IMessage>> _observers;
 
         public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options)
         {
             _httpPost = options.Value.HttpClient != null ? new HttpClientHttpPost(options.Value.HttpClient) : options.Value.HttpPost;
             _url = options.Value.Uri;
-            Observers = new List<IObserver<JObject>>();
+            _observers = new List<IObserver<IMessage>>();
         }
 
         public void Dispose() { }
-
-        public IList<IObserver<JObject>> Observers { get; }
 
         public Task Open(CancellationToken cancellationToken)
             => Task.FromResult(0);
@@ -86,12 +61,12 @@ namespace Genesys.Bayeux.Client.Connectivity
             // Event messages MAY be sent to the client in the same HTTP response 
             // as any other message other than a /meta/handshake response.
             JObject responseObj = null;
-            var events = new List<JObject>();
+            var events = new List<IMessage>();
 
             foreach (var token in tokens)
             {
                 JObject message = (JObject)token;
-                var channel = (string)message[MessageFields.CHANNEL_FIELD];
+                var channel = (string)message[MessageFields.ChannelField];
 
                 if (channel == null)
                     throw new BayeuxProtocolException("No 'channel' field in message.");
@@ -101,11 +76,11 @@ namespace Genesys.Bayeux.Client.Connectivity
                 if (channel.StartsWith("/meta/"))
                     responseObj = message;
                 else
-                    events.Add(message);
+                    events.Add(new BayeuxMessage(message.ToObject<Dictionary<string,object>>()));
             }
 
             var observable = events.ToObservable();
-            foreach (var observer in Observers)
+            foreach (var observer in _observers)
             {
                 observable.Subscribe(observer);
             }
@@ -113,5 +88,21 @@ namespace Genesys.Bayeux.Client.Connectivity
             return responseObj;
         }
 
+
+        public IDisposable Subscribe(IObserver<IMessage> observer)
+        {
+            _observers.Add(observer);
+            return new Unsubscriber<HttpLongPollingTransport,IMessage>(this, observer);
+        }
+
+        public async Task UnsubscribeAsync(IObserver<IMessage> observer)
+        {
+            if (observer != null && _observers.Contains(observer))
+            {
+                _observers.Remove(observer);
+            }
+
+            await Task.CompletedTask.ConfigureAwait(false);
+        }
     }
 }

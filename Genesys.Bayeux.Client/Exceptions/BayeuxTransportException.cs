@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Runtime.Serialization;
 
-namespace Genesys.Bayeux.Client
+namespace Genesys.Bayeux.Client.Exceptions
 {
     [Serializable]
     internal class BayeuxTransportException : Exception

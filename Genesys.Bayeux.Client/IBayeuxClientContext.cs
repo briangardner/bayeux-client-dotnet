@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Enums;
 using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Client
@@ -11,7 +12,7 @@ namespace Genesys.Bayeux.Client
         Task Open(CancellationToken cancellationToken);
         Task<JObject> Request(object request, CancellationToken cancellationToken);
         Task<JObject> RequestMany(IEnumerable<object> requests, CancellationToken cancellationToken);
-        Task SetConnectionState(BayeuxClient.ConnectionState newState);
+        Task SetConnectionState(ConnectionState newState);
         void SetConnection(BayeuxConnection newConnection);
     }
 }

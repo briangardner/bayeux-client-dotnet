@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Client.Enums;
 using Genesys.Bayeux.Client.Messaging;
 using Newtonsoft.Json.Linq;
 
@@ -25,12 +26,12 @@ namespace Genesys.Bayeux.Client.Connectivity
         {
             var request = new JObject()
             {
-                {MessageFields.CLIENT_ID_FIELD, clientId }, {MessageFields.CHANNEL_FIELD, "/meta/connect"}, { MessageFields.CONNECTION_TYPE_FIELD, "long-polling"}
+                {MessageFields.ClientIdField, clientId }, {MessageFields.ChannelField, "/meta/connect"}, { MessageFields.ConnectionTypeField, "long-polling"}
             };
             var response = await context.Request(request,
                 cancellationToken).ConfigureAwait(false);
 
-            await context.SetConnectionState(BayeuxClient.ConnectionState.Connected).ConfigureAwait(false);
+            await context.SetConnectionState(ConnectionState.Connected).ConfigureAwait(false);
 
             return response;
         }
@@ -39,7 +40,7 @@ namespace Genesys.Bayeux.Client.Connectivity
         {
             var request = new JObject()
             {
-                {MessageFields.CLIENT_ID_FIELD, clientId }, {MessageFields.CHANNEL_FIELD, "/meta/disconnect"}
+                {MessageFields.ClientIdField, clientId }, {MessageFields.ChannelField, "/meta/disconnect"}
             };
             return context.Request(
                 request,

@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Options;
-using Genesys.Bayeux.Tests.Unit;
 using Moq;
 using Moq.Protected;
-using Newtonsoft.Json;
 using Xunit;
 
-namespace Genesys.Bayeux.Client.Tests
+namespace Genesys.Bayeux.Tests.Unit
 {
     public class BayeuxClientTest
     {
@@ -27,11 +25,11 @@ namespace Genesys.Bayeux.Client.Tests
 
             mock.Protected().As<IHttpMessageHandlerProtected>()
                 .Setup(h => h.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(BuildBayeuxResponse(new { }));
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(new { }));
 
             using (var bayeuxClient = CreateHttpBayeuxClient(httpClient))
             {
-                Assert.ThrowsAsync<BayeuxProtocolException>(async () => await bayeuxClient.Start().ConfigureAwait(false));
+                await Assert.ThrowsAsync<BayeuxProtocolException>(async () => await bayeuxClient.Start().ConfigureAwait(false)).ConfigureAwait(false);
             }
         }
 
@@ -43,7 +41,7 @@ namespace Genesys.Bayeux.Client.Tests
 
             mock.Protected().As<IHttpMessageHandlerProtected>()
                 .SetupSequence(h => h.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(BuildBayeuxResponse(
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(
                     new
                     {
                         minimumVersion = "1.0",
@@ -59,7 +57,7 @@ namespace Genesys.Bayeux.Client.Tests
                         version = "1.0",
                         successful = true,
                     }))
-                .ReturnsAsync(BuildBayeuxResponse(
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(
                     new
                     {
                         channel = "/meta/disconnect",
@@ -68,7 +66,7 @@ namespace Genesys.Bayeux.Client.Tests
 
             using (var bayeuxClient = CreateHttpBayeuxClient(httpClient))
             {
-                await bayeuxClient.Start();
+                await bayeuxClient.Start().ConfigureAwait(false);
             }
 
             mock.Protected().As<IHttpMessageHandlerProtected>()
@@ -82,11 +80,11 @@ namespace Genesys.Bayeux.Client.Tests
             var mock = new Mock<HttpMessageHandler>();
             mock.Protected().As<IHttpMessageHandlerProtected>()
                 .SetupSequence(h => h.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(BuildBayeuxResponse(successfulHandshakeResponse))
-                .ReturnsAsync(BuildBayeuxResponse(successfulConnectResponse))
-                .ReturnsAsync(BuildBayeuxResponse(rehandshakeConnectResponse))
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulHandshakeResponse))
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulConnectResponse))
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(TestMessages.RehandshakeConnectResponse))
                 .ThrowsAsync(new HttpRequestException("mock raising exception"))
-                .ReturnsAsync(BuildBayeuxResponse(successfulHandshakeResponse))
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulHandshakeResponse))
                 .ThrowsAsync(new HttpRequestException("mock raising exception"))
                 .ThrowsAsync(new HttpRequestException("mock raising exception"))
                 .ThrowsAsync(new HttpRequestException("mock raising exception"))
@@ -94,7 +92,7 @@ namespace Genesys.Bayeux.Client.Tests
                 .ThrowsAsync(new HttpRequestException("mock raising exception"))
                 .ReturnsIndefinitely(() =>
                   Task.Delay(TimeSpan.FromSeconds(5))
-                      .ContinueWith(t => BuildBayeuxResponse(successfulHandshakeResponse)))
+                      .ContinueWith(t => TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulHandshakeResponse)))
                 ;
             var bayeuxClient = new BayeuxClient(
                 new HttpLongPollingTransportOptions{ HttpClient = new HttpClient(mock.Object), Uri = Url }.Build(), 
@@ -102,8 +100,8 @@ namespace Genesys.Bayeux.Client.Tests
 
             using (bayeuxClient)
             {
-                await bayeuxClient.Start();
-                await Task.Delay(TimeSpan.FromSeconds(20));
+                await bayeuxClient.Start().ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
             }
         }
 
@@ -114,11 +112,11 @@ namespace Genesys.Bayeux.Client.Tests
             mock.Protected().As<IHttpMessageHandlerProtected>()
                 .SetupSequence(h => h.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new HttpRequestException("mock raising exception"))
-                .ReturnsAsync(BuildBayeuxResponse(successfulHandshakeResponse))
-                .ReturnsAsync(BuildBayeuxResponse(successfulConnectResponse))
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulHandshakeResponse))
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulConnectResponse))
                 .ReturnsIndefinitely(() =>
                   Task.Delay(TimeSpan.FromSeconds(5))
-                      .ContinueWith(t => BuildBayeuxResponse(successfulConnectResponse)))
+                      .ContinueWith(t => TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulConnectResponse)))
                 ;
 
             var bayeuxClient = new BayeuxClient(
@@ -128,7 +126,7 @@ namespace Genesys.Bayeux.Client.Tests
             using (bayeuxClient)
             {
                 bayeuxClient.StartInBackground();
-                await Task.Delay(TimeSpan.FromSeconds(20));
+                await Task.Delay(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
             }
         }
 
@@ -143,20 +141,20 @@ namespace Genesys.Bayeux.Client.Tests
             int subscriptionCount = 0;
 
             mockProtected
-                .Setup(h => h.SendAsync(MatchSubscriptionRequest(), It.IsAny<CancellationToken>()))
+                .Setup(h => h.SendAsync(TestMessages.MatchSubscriptionRequest(), It.IsAny<CancellationToken>()))
                 .Returns(() =>
                     Task.Run(() => subscriptionCount++)
-                        .ContinueWith(t => BuildBayeuxResponse(successfulSubscriptionResponse)));
+                        .ContinueWith(t => TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulSubscriptionResponse)));
 
             mockProtected
-                .Setup(h => h.SendAsync(MatchHandshakeRequest(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(BuildBayeuxResponse(successfulHandshakeResponse));
+                .Setup(h => h.SendAsync(TestMessages.MatchHandshakeRequest(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulHandshakeResponse));
 
             mockProtected
-                .Setup(h => h.SendAsync(MatchConnectRequest(), It.IsAny<CancellationToken>()))
+                .Setup(h => h.SendAsync(TestMessages.MatchConnectRequest(), It.IsAny<CancellationToken>()))
                 .Returns(() =>
                     Task.Delay(TimeSpan.FromSeconds(5))
-                        .ContinueWith(t => BuildBayeuxResponse(successfulConnectResponse)));
+                        .ContinueWith(t => TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulConnectResponse)));
 
             var bayeuxClient = new BayeuxClient(
                 new HttpLongPollingTransportOptions() { HttpClient = new HttpClient(mock.Object), Uri = Url }.Build(),
@@ -172,68 +170,13 @@ namespace Genesys.Bayeux.Client.Tests
             Assert.Equal(1, subscriptionCount);
         }
 
-        HttpRequestMessage MatchSubscriptionRequest() => MatchRequestContains("/meta/subscribe");
-        HttpRequestMessage MatchHandshakeRequest() => MatchRequestContains("/meta/handshake");
-        HttpRequestMessage MatchConnectRequest() => MatchRequestContains("/meta/connect");
-
-        HttpRequestMessage MatchRequestContains(string s) =>
-            Match.Create((HttpRequestMessage request) =>
-                request.Content.ReadAsStringAsync().Result.Contains(s));
+        
 
 
 
         const string Url = "http://testing.net/";
 
-        static readonly object successfulHandshakeResponse =
-            new
-            {
-                minimumVersion = "1.0",
-                clientId = "nv8g1psdzxpb9yol3z1l6zvk2p",
-                supportedConnectionTypes = new[] { "long-polling", "callback-polling" },
-                advice = new { interval = 0, timeout = 20000, reconnect = "retry" },
-                channel = "/meta/handshake",
-                version = "1.0",
-                successful = true,
-            };
 
-        static readonly object successfulConnectResponse =
-            new
-            {
-                channel = "/meta/connect",
-                successful = true,
-            };
-
-        static readonly object successfulSubscriptionResponse =
-            new
-            {
-                channel = "/meta/subscribe",
-                successful = true,
-            };
-
-        // real re-handshake advice, when too much time has passed without polling:
-        // [{"advice":{"interval":0,"reconnect":"handshake"},"channel":"/meta/connect","error":"402::Unknown client","successful":false}]
-        static readonly object rehandshakeConnectResponse =
-            new
-            {
-                channel = "/meta/connect",
-                successful = false,
-                error = "402::Unknown client",
-                advice = new { interval = 0, reconnect = "handshake" },
-            };
-
-        //static readonly object eventMessage =
-        //    new
-        //    {
-        //        channel = "/test",
-        //        data = new { key = "event data" },
-        //    };
-
-        static HttpResponseMessage BuildBayeuxResponse(params object[] messages) =>
-            new HttpResponseMessage()
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(JsonConvert.SerializeObject(messages)),
-            };
 
         interface IHttpMessageHandlerProtected
         {
@@ -245,7 +188,7 @@ namespace Genesys.Bayeux.Client.Tests
         {
             var httpPoster = new Mock<IHttpPost>();
             var bayeuxClient = new BayeuxClient(new HttpLongPollingTransportOptions() { HttpPost = httpPoster.Object, Uri = "none" }.Build());
-            Assert.ThrowsAsync<InvalidOperationException>( async () => await bayeuxClient.Subscribe(new ChannelId("dummy")));
+            await Assert.ThrowsAsync<InvalidOperationException>( async () => await bayeuxClient.Subscribe(new ChannelId("dummy")).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         [Fact]
@@ -253,7 +196,7 @@ namespace Genesys.Bayeux.Client.Tests
         {
             var httpPoster = new Mock<IHttpPost>();
             var bayeuxClient = new BayeuxClient(new HttpLongPollingTransportOptions() { HttpPost = httpPoster.Object, Uri = "none" }.Build());
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await bayeuxClient.Unsubscribe(new ChannelId("dummy"))) ;
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await bayeuxClient.Unsubscribe(new ChannelId("dummy")).ConfigureAwait(false)).ConfigureAwait(false) ;
         }
 
         [Fact]

@@ -1,23 +1,23 @@
 ﻿using System;
-using Genesys.Bayeux.Client.Messaging;
 
 namespace Genesys.Bayeux.Client.Channels
 {
-    internal class Unsubscriber : IDisposable
+    internal class Unsubscriber<TPublisher, TType> : IDisposable
+        where TType:class
+        where TPublisher:IUnsubscribe<TType>
     {
-        private readonly IObserver<IMessage> _observer;
-        private readonly AbstractChannel _channel;
+        private readonly IObserver<TType> _observer;
+        private readonly TPublisher _publisher;
 
-        public Unsubscriber(AbstractChannel channel, IObserver<IMessage> observer)
+        public Unsubscriber(TPublisher publisher, IObserver<TType> observer)
         {
             _observer = observer;
-            _channel = channel;
+            _publisher = publisher;
         }
 
         public void Dispose()
         {
-            //TODO: Revisit this
-            _channel.Unsubscribe(_observer).GetAwaiter().GetResult();
+            _publisher.UnsubscribeAsync(_observer).GetAwaiter().GetResult();
         }
     }
 }

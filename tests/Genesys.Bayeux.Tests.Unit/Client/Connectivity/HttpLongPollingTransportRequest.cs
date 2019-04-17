@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
 using Microsoft.Extensions.Options;
@@ -17,7 +18,8 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
 {
     public class HttpLongPollingTransportRequest
     {
-        private string _fakeUrl = "http://localhost/testing123";
+        private const string FakeUrl = "http://localhost/testing123";
+
         [Fact]
         public async Task Should_Post_To_Url()
         {
@@ -30,7 +32,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
 
             var transport = new HttpLongPollingTransport(GetOptions(post.Object));
             await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
-            post.Verify(x => x.PostAsync(_fakeUrl, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            post.Verify(x => x.PostAsync(FakeUrl, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -60,9 +62,9 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                     Content = new StringContent(content.ToString())
                 });
             var transport = new HttpLongPollingTransport(GetOptions(post.Object));
-            transport.Observers.Add(observer.Object);
+            transport.Subscribe(observer.Object);
             var result = await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
-            observer.Verify(x => x.OnNext(It.IsAny<JObject>()), Times.Exactly(2));
+            observer.Verify(x => x.OnNext(It.IsAny<IMessage>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -81,10 +83,10 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                     Content = new StringContent(content.ToString())
                 });
             var transport = new HttpLongPollingTransport(GetOptions(post.Object));
-            transport.Observers.Add(observer.Object);
+            transport.Subscribe(observer.Object);
             await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
             await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
-            observer.Verify(x => x.OnNext(It.IsAny<JObject>()), Times.Exactly(4));
+            observer.Verify(x => x.OnNext(It.IsAny<IMessage>()), Times.Exactly(4));
         }
 
         [Fact]
@@ -103,30 +105,30 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                  await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        private Mock<IObserver<JObject>> MockObserver => new Mock<IObserver<JObject>>();
+        private Mock<IObserver<IMessage>> MockObserver => new Mock<IObserver<IMessage>>();
 
         private IOptions<HttpLongPollingTransportOptions> GetOptions(IHttpPost httpPost)
         {
             return new OptionsWrapper<HttpLongPollingTransportOptions>(new HttpLongPollingTransportOptions()
             {
                 HttpPost = httpPost,
-                Uri = _fakeUrl
+                Uri = FakeUrl
             });
         }
 
         private JToken MetaResponse => new JObject()
         {
-            {MessageFields.CHANNEL_FIELD, "/meta/testing" }, {MessageFields.CLIENT_ID_FIELD, "123"}
+            {MessageFields.ChannelField, "/meta/testing" }, {MessageFields.ClientIdField, "123"}
         };
 
         private JToken EventResponse => new JObject()
         {
-            {MessageFields.CHANNEL_FIELD, "/some/testing" }, {MessageFields.CLIENT_ID_FIELD, "123"}, {"messageId", Guid.NewGuid().ToString()}
+            {MessageFields.ChannelField, "/some/testing" }, {MessageFields.ClientIdField, "123"}, {"messageId", Guid.NewGuid().ToString()}
         };
 
         private JToken ErrorEventResponse => new JObject()
         {
-            {MessageFields.CHANNEL_FIELD, "123"}, {"messageId", Guid.NewGuid().ToString()}
+            {MessageFields.ChannelField, "123"}, {"messageId", Guid.NewGuid().ToString()}
         };
 
 

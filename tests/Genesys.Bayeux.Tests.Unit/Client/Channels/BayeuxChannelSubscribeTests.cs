@@ -48,7 +48,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
         {
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
             channel.Subscribe(new Mock<IObserver<IMessage>>().Object);
-            Assert.Equal("/meta/subscribe", _subscribeMessage[MessageFields.CHANNEL_FIELD]);
+            Assert.Equal("/meta/subscribe", _subscribeMessage[MessageFields.ChannelField]);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
         {
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
             channel.Subscribe(new Mock<IObserver<IMessage>>().Object);
-            Assert.Equal(_channelId.ToString(), _subscribeMessage[MessageFields.SUBSCRIPTION_FIELD]);
+            Assert.Equal(_channelId.ToString(), _subscribeMessage[MessageFields.SubscriptionField]);
         }
     }
 }

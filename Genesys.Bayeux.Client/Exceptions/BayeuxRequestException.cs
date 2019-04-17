@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Genesys.Bayeux.Client
+namespace Genesys.Bayeux.Client.Exceptions
 {
     public class BayeuxRequestException : Exception
     {

@@ -15,9 +15,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Genesys.Bayeux.Client\Genesys.Bayeux.Client.csproj" />
+    <ProjectReference Include="..\..\Genesys.Bayeux.Extensions.Ack\Genesys.Bayeux.Extensions.Ack.csproj" />
+    <ProjectReference Include="..\..\Genesys.Bayeux.Extensions.Error\Genesys.Bayeux.Extensions.Error.csproj" />
+    <ProjectReference Include="..\..\Genesys.Bayeux.Extensions.ReplayId\Genesys.Bayeux.Extensions.ReplayId.csproj" />
+    <ProjectReference Include="..\..\Genesys.Bayeux.Extensions.TimesyncClient\Genesys.Bayeux.Extensions.TimesyncClient.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Extensions\Ack\" />
+    <Folder Include="Extensions\Error\" />
     <Folder Include="Extensions\ReplayId\" />
   </ItemGroup>
 
