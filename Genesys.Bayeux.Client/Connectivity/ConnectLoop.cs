@@ -14,7 +14,7 @@ namespace Genesys.Bayeux.Client.Connectivity
 {
     internal class ConnectLoop : IDisposable
     {
-        private static readonly ILog Log = BayeuxClient.Log;
+        private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
         private readonly string _connectionType;
         private readonly ReconnectDelays _reconnectDelays;
@@ -173,22 +173,25 @@ namespace Genesys.Bayeux.Client.Connectivity
             }
             catch (BayeuxRequestException e)
             {
+                _lastAdvice = e.Advice;
+
+                var reconnectDelay = _reconnectDelays.GetNext();
+                Log.WarnException($"Request failed: {e.Message}. Retrying after {reconnectDelay}", e);
                 await _context.SetConnectionState(ConnectionState.Connecting).ConfigureAwait(false);
-                Log.Error($"Bayeux request failed with error: {e.BayeuxError}");
+                await Task.Delay(reconnectDelay).ConfigureAwait(false);
             }
         }
 
         private async Task Handshake(CancellationToken cancellationToken)
         {
             await _context.SetConnectionState(ConnectionState.Connecting).ConfigureAwait(false);
-
-            var response = await _context.Request(
-                new
-                {
-                    channel = "/meta/handshake",
-                    version = "1.0",
-                    supportedConnectionTypes = new[] { _connectionType },
-                },
+            var handshakeRequest = new
+            {
+                channel = "/meta/handshake",
+                version = "1.0",
+                supportedConnectionTypes = new[] {_connectionType}
+            };
+            var response = await _context.Request(JObject.FromObject(handshakeRequest), 
                 cancellationToken).ConfigureAwait(false);
 
             _currentConnection = new BayeuxConnection((string)response[MessageFields.ClientIdField], _context);

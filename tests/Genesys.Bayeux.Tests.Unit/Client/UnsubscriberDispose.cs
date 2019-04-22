@@ -5,6 +5,7 @@ using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Messaging;
+using Genesys.Bayeux.Client.Transport;
 using Moq;
 using Xunit;
 

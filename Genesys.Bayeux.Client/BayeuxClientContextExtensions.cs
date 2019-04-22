@@ -1,12 +1,10 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Genesys.Bayeux.Client.Channels;
+﻿using Genesys.Bayeux.Client.Channels;
 
-namespace Genesys.Bayeux.Client.Extensions
+namespace Genesys.Bayeux.Client
 {
-    static class BayeuxClientExtensions
+    static class BayeuxClientContextExtensions
     {
-        public static AbstractChannel GetChannel(this BayeuxClient client, string channelId)
+        public static AbstractChannel GetChannel(this IBayeuxClientContext client, string channelId)
         {
             client.Channels.TryGetValue(channelId, out var channel);
             if (channel != null)

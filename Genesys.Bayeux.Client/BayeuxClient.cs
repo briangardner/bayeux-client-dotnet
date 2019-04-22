@@ -1,42 +1,26 @@
 ﻿using Genesys.Bayeux.Client.Logging;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
-using Genesys.Bayeux.Client.Enums;
-using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Options;
 using static Genesys.Bayeux.Client.Logging.LogProvider;
 
 namespace Genesys.Bayeux.Client
 {
-    public class BayeuxClient : IDisposable, IBayeuxClientContext
+    public class BayeuxClient : IDisposable, IBayeuxClient
     {
-        internal static readonly ILog Log;
-        public ConcurrentDictionary<string, AbstractChannel> Channels { get; } = new ConcurrentDictionary<string, AbstractChannel>();
+        internal static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
-        static BayeuxClient()
-        {
-            LogProvider.LogProviderResolvers.Add(
-                new Tuple<IsLoggerAvailable, CreateLogProvider>(() => true, () => new TraceSourceLogProvider()));
-
-            Log = LogProvider.GetLogger(typeof(BayeuxClient).Namespace);
-        }
-
-        private readonly IBayeuxTransport _transport;
-        private readonly TaskScheduler _eventTaskScheduler;
+        private readonly IBayeuxClientContext _context;
         private readonly Subscriber _subscriber;
         private readonly ConnectLoop _connectLoop;
         private readonly IList<IExtension> _extensions;
 
-        volatile BayeuxConnection _currentConnection;
 
         /// <param name="eventTaskScheduler">
         /// <para>
@@ -54,32 +38,16 @@ namespace Genesys.Bayeux.Client
         /// values passed here. The last element of the collection will be re-used indefinitely.
         /// </param>
         public BayeuxClient(
-            IBayeuxTransport transport,
-            ReconnectDelayOptions delayOptions = null,
-            TaskScheduler eventTaskScheduler = null)
+            IBayeuxClientContext context,
+            ReconnectDelayOptions delayOptions = null)
         {
-            this._transport = transport;
-            this._eventTaskScheduler = ChooseEventTaskScheduler(eventTaskScheduler);
-            this._connectLoop = new ConnectLoop("long-polling", delayOptions?.ReconnectDelays, this);
-            this._subscriber = new Subscriber(this);
+            _context = context;
+            _connectLoop = new ConnectLoop("long-polling", delayOptions?.ReconnectDelays, _context);
+            _subscriber = new Subscriber(_context);
+            _context.OnNewConnection += OnNewConnection;
         }
 
-        static TaskScheduler ChooseEventTaskScheduler(TaskScheduler eventTaskScheduler)
-        {
-            if (eventTaskScheduler != null)
-                return eventTaskScheduler;
-            
-            if (SynchronizationContext.Current != null)
-            {
-                Log.Info($"Using current SynchronizationContext for events: {SynchronizationContext.Current}");
-                return TaskScheduler.FromCurrentSynchronizationContext();
-            }
-            else
-            {
-                Log.Info("Using a new TaskScheduler with ordered execution for events.");
-                return new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler;
-            }
-        }
+        
 
         // TODO: add a new method to Start without failing when first connection has failed.
 
@@ -100,10 +68,7 @@ namespace Genesys.Bayeux.Client
         public async Task Stop(CancellationToken cancellationToken = default(CancellationToken))
         {
             _connectLoop.Dispose();
-
-            var connection = Interlocked.Exchange(ref _currentConnection, null);
-            if (connection != null)
-                await connection.Disconnect(cancellationToken).ConfigureAwait(false);
+            await _context.Disconnect(cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()
@@ -111,36 +76,8 @@ namespace Genesys.Bayeux.Client
             Stop().GetAwaiter().GetResult();
         }
 
-        
-
-        public class ConnectionStateChangedArgs : EventArgs
+        private void OnNewConnection(object sender, EventArgs e)
         {
-            public ConnectionState ConnectionState { get; private set; }
-
-            public ConnectionStateChangedArgs(ConnectionState state)
-            {
-                ConnectionState = state;
-            }
-
-            public override string ToString() => ConnectionState.ToString();
-        }
-
-        protected volatile int currentConnectionState = -1;
-
-        public event EventHandler<ConnectionStateChangedArgs> ConnectionStateChanged;
-
-        protected internal virtual async Task OnConnectionStateChangedAsync(ConnectionState state)
-        {
-            var oldConnectionState = Interlocked.Exchange(ref currentConnectionState, (int) state);
-
-            if (oldConnectionState != (int)state)
-                await RunInEventTaskScheduler(() =>
-                    ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedArgs(state))).ConfigureAwait(false);
-        }
-
-        internal void SetNewConnection(BayeuxConnection newConnection)
-        {
-            _currentConnection = newConnection;
             _subscriber.OnConnected();
         }
 
@@ -181,82 +118,47 @@ namespace Genesys.Bayeux.Client
 
         #endregion
 
-        Task SubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
+        private Task SubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
             var channelIds = channels as ChannelId[] ?? channels.ToArray();
             _subscriber.AddSubscription(channelIds);
             return RequestSubscribe(channelIds, cancellationToken, throwIfNotConnected);
         }
 
-        Task UnsubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
+        private Task UnsubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
             var channelIds = channels as ChannelId[] ?? channels.ToArray();
             _subscriber.RemoveSubscription(channelIds);
             return RequestUnsubscribe(channelIds, cancellationToken, throwIfNotConnected);
         }
 
-        internal Task RequestSubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
+        private Task RequestSubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
             RequestSubscription(channels, Enumerable.Empty<ChannelId>(), cancellationToken, throwIfNotConnected);
 
-        Task RequestUnsubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
+        private Task RequestUnsubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected) =>
             RequestSubscription(Enumerable.Empty<ChannelId>(), channels, cancellationToken, throwIfNotConnected);
 
-        async Task RequestSubscription(
+        private async Task RequestSubscription(
             IEnumerable<ChannelId> channelsToSubscribe,
             IEnumerable<ChannelId> channelsToUnsubscribe,
             CancellationToken cancellationToken,
             bool throwIfNotConnected)
         {
-            var connection = _currentConnection;
-            if (connection == null)
+            if (!_context.IsConnected())
             {
                 if (throwIfNotConnected)
                     throw new InvalidOperationException("Not connected. Operation will be effective on next connection.");
             }
             else
             {
-                var messages = channelsToSubscribe.Select(ch => this.GetChannel(ch.ToString()).GetSubscribeMessage())
-                    .Concat(channelsToUnsubscribe.Select(ch => this.GetChannel(ch.ToString()).GetUnsubscribeMessage()));
-                await RequestMany(messages,cancellationToken).ConfigureAwait(false);
+                var messages = channelsToSubscribe.Select(ch => _context.GetChannel(ch.ToString()).GetSubscribeMessage())
+                    .Concat(channelsToUnsubscribe.Select(ch => _context.GetChannel(ch.ToString()).GetUnsubscribeMessage()));
+                await _context.RequestMany(messages,cancellationToken).ConfigureAwait(false);
             }
         }
 
-        internal Task<JObject> Request(object request, CancellationToken cancellationToken)
-        {
-            Trace.Assert(!(request is System.Collections.IEnumerable), "Use method RequestMany");
-            return RequestMany(new[] { request }, cancellationToken);
-        }
 
-        internal async Task<JObject> RequestMany(IEnumerable<object> requests, CancellationToken cancellationToken)
-        {
-            // https://docs.cometd.org/current/reference/#_messages
-            // All Bayeux messages SHOULD be encapsulated in a JSON encoded array so that multiple messages may be transported together
-            var responseObj = await _transport.Request(requests, cancellationToken).ConfigureAwait(false);
-
-            var response = responseObj.ToObject<BayeuxResponse>();
-
-            if (!response.successful)
-                throw new BayeuxRequestException(response.error);
-
-            return responseObj;
-        }
-
-        async Task RunInEventTaskScheduler(Action action) =>
-            await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.DenyChildAttach, _eventTaskScheduler).ConfigureAwait(false);
-
-        Task IBayeuxClientContext.Open(CancellationToken cancellationToken)
-            => _transport.Open(cancellationToken);
-
-        Task<JObject> IBayeuxClientContext.Request(object request, CancellationToken cancellationToken)
-            => Request(request, cancellationToken);
-
-        Task<JObject> IBayeuxClientContext.RequestMany(IEnumerable<object> requests, CancellationToken cancellationToken)
-            => RequestMany(requests, cancellationToken);
-
-        Task IBayeuxClientContext.SetConnectionState(ConnectionState newState)
-            => OnConnectionStateChangedAsync(newState);
-
-        void IBayeuxClientContext.SetConnection(BayeuxConnection newConnection)
-            => SetNewConnection(newConnection);
+        
+       
     }
 }

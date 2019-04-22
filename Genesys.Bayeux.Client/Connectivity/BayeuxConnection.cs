@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Enums;
 using Genesys.Bayeux.Client.Messaging;
 using Newtonsoft.Json.Linq;
@@ -11,14 +8,14 @@ namespace Genesys.Bayeux.Client.Connectivity
 {
     public class BayeuxConnection
     {
-        readonly string clientId;
-        readonly IBayeuxClientContext context;
+        public readonly string ClientId;
+        private readonly IBayeuxClientContext context;
 
         public BayeuxConnection(
             string clientId,
             IBayeuxClientContext context)
         {
-            this.clientId = clientId;
+            this.ClientId = clientId;
             this.context = context;
         }
         
@@ -26,7 +23,7 @@ namespace Genesys.Bayeux.Client.Connectivity
         {
             var request = new JObject()
             {
-                {MessageFields.ClientIdField, clientId }, {MessageFields.ChannelField, "/meta/connect"}, { MessageFields.ConnectionTypeField, "long-polling"}
+                {MessageFields.ClientIdField, ClientId }, {MessageFields.ChannelField, "/meta/connect"}, { MessageFields.ConnectionTypeField, "long-polling"}
             };
             var response = await context.Request(request,
                 cancellationToken).ConfigureAwait(false);
@@ -40,7 +37,7 @@ namespace Genesys.Bayeux.Client.Connectivity
         {
             var request = new JObject()
             {
-                {MessageFields.ClientIdField, clientId }, {MessageFields.ChannelField, "/meta/disconnect"}
+                {MessageFields.ClientIdField, ClientId }, {MessageFields.ChannelField, "/meta/disconnect"}
             };
             return context.Request(
                 request,

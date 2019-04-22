@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
 {
-    public class BayeuxClientExtensionsGetChannel
+    public class BayeuxClientContextExtensionsGetChannel
     {
         [Fact]
         public void Should_Return_Channel_If_Already_Exists()
         {
-            var client = new BayeuxClient(new HttpLongPollingTransportOptions
+            var client = new BayeuxClientContext(new HttpLongPollingTransportOptions
             {
                 HttpPost = new Mock<IHttpPost>().Object,
                 Uri = "http://localhost"
@@ -29,7 +29,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
         [Fact]
         public void Should_Return_New_Channel()
         {
-            var client = new BayeuxClient(new HttpLongPollingTransportOptions
+            var client = new BayeuxClientContext(new HttpLongPollingTransportOptions
             {
                 HttpPost = new Mock<IHttpPost>().Object,
                 Uri = "http://localhost"

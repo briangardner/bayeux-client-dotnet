@@ -6,6 +6,7 @@ using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
+using Genesys.Bayeux.Client.Transport;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;

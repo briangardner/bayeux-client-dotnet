@@ -5,7 +5,7 @@ namespace Genesys.Bayeux.Extensions.ReplayId
 {
     public static class BayeuxClientExtensions
     {
-        public static AbstractChannel GetChannel(this BayeuxClient client, string channelId, long replayId)
+        public static AbstractChannel GetChannel(this IBayeuxClientContext client, string channelId, long replayId)
         {
             client.Channels.TryGetValue(channelId, out var channel);
             if (channel != null)

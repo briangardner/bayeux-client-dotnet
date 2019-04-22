@@ -12,7 +12,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
         [Fact]
         public void Should_Return_New_Channel_With_Correct_ChannelId()
         {
-            var client = new BayeuxClient(new HttpLongPollingTransportOptions
+            var client = new BayeuxClientContext(new HttpLongPollingTransportOptions
             {
                 HttpPost = new Mock<IHttpPost>().Object,
                 Uri = "http://localhost"

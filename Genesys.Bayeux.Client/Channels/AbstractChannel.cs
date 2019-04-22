@@ -17,17 +17,13 @@ namespace Genesys.Bayeux.Client.Channels
 
     public abstract class AbstractChannel : IChannel, IUnsubscribe<IMessage>
     {
-        private readonly ILog _logger;
+        private readonly ILog _logger = LogProvider.GetCurrentClassLogger();
         protected internal readonly IList<IObserver<IMessage>> observers;
 
         protected AbstractChannel(IBayeuxClientContext clientContext, ChannelId id)
         {
             observers = new List<IObserver<IMessage>>();
             ClientContext = clientContext;
-            LogProvider.LogProviderResolvers.Add(
-                new Tuple<LogProvider.IsLoggerAvailable, LogProvider.CreateLogProvider>(() => true, () => new TraceSourceLogProvider()));
-
-            _logger = LogProvider.GetLogger(typeof(AbstractChannel).Namespace);
             ChannelId = id;
 
         }
@@ -37,12 +33,13 @@ namespace Genesys.Bayeux.Client.Channels
 
         protected internal async Task SendSubscribe()
         {
-            await ClientContext.Request(GetSubscribeMessage(), new CancellationToken()).ConfigureAwait(false);
+            var message = GetSubscribeMessage();
+            await ClientContext.RequestMany(new JObject[]{ message }, new CancellationToken()).ConfigureAwait(false);
         }
 
         protected internal async Task SendUnSubscribe()
         {
-            await ClientContext.Request(GetUnsubscribeMessage(), new CancellationToken()).ConfigureAwait(false);
+            await ClientContext.RequestMany(new JObject[]{ GetUnsubscribeMessage() }, new CancellationToken()).ConfigureAwait(false);
         }
 
         public virtual JObject GetSubscribeMessage()

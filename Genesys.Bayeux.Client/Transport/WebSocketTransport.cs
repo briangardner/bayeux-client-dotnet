@@ -13,11 +13,11 @@ using Genesys.Bayeux.Client.Messaging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Genesys.Bayeux.Client.Connectivity
+namespace Genesys.Bayeux.Client.Transport
 {
     internal class WebSocketTransport : IBayeuxTransport
     {
-        static readonly ILog log = BayeuxClient.Log;
+        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
         readonly Func<WebSocket> webSocketFactory;
         readonly Uri uri;
@@ -110,7 +110,7 @@ namespace Genesys.Bayeux.Client.Connectivity
             }
             catch (Exception e)
             {
-                log.ErrorException("Unexpected exception thrown in WebSocket receiving loop", e);
+                Log.ErrorException("Unexpected exception thrown in WebSocket receiving loop", e);
                 fault = new BayeuxTransportException("Unexpected exception. Connection assumed closed.", e, transportClosed: true);
             }
 
@@ -154,7 +154,7 @@ namespace Genesys.Bayeux.Client.Connectivity
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
                 var received = JToken.ReadFrom(new JsonTextReader(reader));
-                log.Debug(() => $"Received: {received.ToString(Formatting.None)}");
+                Log.Debug(() => $"Received: {received.ToString(Formatting.None)}");
 
                 var responses = received is JObject ?
                     new[] { (JObject)received } :
@@ -175,7 +175,7 @@ namespace Genesys.Bayeux.Client.Connectivity
                         if (found)
                             requestTask.SetResult(response);
                         else
-                            log.Error($"Request not found for received response with id '{messageId}'");
+                            Log.Error($"Request not found for received response with id '{messageId}'");
                     }
                 }
 
@@ -201,7 +201,7 @@ namespace Genesys.Bayeux.Client.Connectivity
             }
             
             var messageStr = JsonConvert.SerializeObject(requestsJArray);
-            log.Debug(() => $"Posting: {messageStr}");
+            Log.Debug(() => $"Posting: {messageStr}");
             await SendAsync(messageStr, cancellationToken).ConfigureAwait(false);
 
             var timeoutTask = Task.Delay(responseTimeout, cancellationToken);

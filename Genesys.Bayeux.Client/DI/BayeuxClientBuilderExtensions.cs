@@ -2,6 +2,7 @@
 using Genesys.Bayeux.Client.Builders;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Options;
+using Genesys.Bayeux.Client.Transport;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Genesys.Bayeux.Client.DI
@@ -48,7 +49,8 @@ namespace Genesys.Bayeux.Client.DI
 
         private static void AddServices(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<IBayeuxClientContext, BayeuxClient>();
+            serviceCollection.AddTransient<IBayeuxClientContext, BayeuxClientContext>();
+            serviceCollection.AddTransient<IBayeuxClient, BayeuxClient>();
         }
     }
 }

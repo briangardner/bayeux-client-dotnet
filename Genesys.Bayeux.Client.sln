@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genesys.Bayeux.Extensions.E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genesys.Bayeux.Extensions.TimesyncClient", "Genesys.Bayeux.Extensions.TimesyncClient\Genesys.Bayeux.Extensions.TimesyncClient.csproj", "{62BC821F-50DF-43F4-8321-35E9ADDD3B10}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genesys.Bayeux.TestListener", "Genesys.Bayeux.TestListener\Genesys.Bayeux.TestListener.csproj", "{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,12 +51,17 @@ Global
 		{62BC821F-50DF-43F4-8321-35E9ADDD3B10}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62BC821F-50DF-43F4-8321-35E9ADDD3B10}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62BC821F-50DF-43F4-8321-35E9ADDD3B10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A74E3F97-DB47-4095-B270-267E5754B9A1} = {1FBAF849-5139-447D-822C-19B7C9281215}
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F} = {1FBAF849-5139-447D-822C-19B7C9281215}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CF3E3EC5-0BF9-4D3B-9A22-0FF6C752C92A}

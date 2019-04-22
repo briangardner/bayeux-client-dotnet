@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Messaging;
 using Newtonsoft.Json.Linq;
 
-namespace Genesys.Bayeux.Client.Connectivity
+namespace Genesys.Bayeux.Client.Transport
 {
     public interface IBayeuxTransport : IDisposable, IObservable<IMessage>, IUnsubscribe<IMessage>
     {

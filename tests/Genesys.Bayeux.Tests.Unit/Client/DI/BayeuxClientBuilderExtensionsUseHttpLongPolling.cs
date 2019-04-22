@@ -10,6 +10,7 @@ using Genesys.Bayeux.Client.Builders;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.DI;
 using Genesys.Bayeux.Client.Options;
+using Genesys.Bayeux.Client.Transport;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;

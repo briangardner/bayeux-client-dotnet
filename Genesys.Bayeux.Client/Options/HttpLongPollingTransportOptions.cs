@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Transport;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 

@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Extensions\Ack\" />
     <Folder Include="Extensions\Error\" />
     <Folder Include="Extensions\ReplayId\" />
   </ItemGroup>

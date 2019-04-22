@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Logging;
 using Genesys.Bayeux.Client.Messaging;
@@ -13,11 +14,11 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Genesys.Bayeux.Client.Connectivity
+namespace Genesys.Bayeux.Client.Transport
 {
     internal class HttpLongPollingTransport : IBayeuxTransport
     {
-        private static readonly ILog Log = BayeuxClient.Log;
+        private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
         readonly IHttpPost _httpPost;
         readonly string _url;
@@ -56,7 +57,7 @@ namespace Genesys.Bayeux.Client.Connectivity
             IEnumerable<JToken> tokens = responseToken is JArray ?
                 (IEnumerable<JToken>)responseToken :
                 new[] { responseToken };
-
+            Log.Debug("Received event(s): {@tokens}", tokens);
             // https://docs.cometd.org/current/reference/#_delivery
             // Event messages MAY be sent to the client in the same HTTP response 
             // as any other message other than a /meta/handshake response.
@@ -70,8 +71,6 @@ namespace Genesys.Bayeux.Client.Connectivity
 
                 if (channel == null)
                     throw new BayeuxProtocolException("No 'channel' field in message.");
-
-
 
                 if (channel.StartsWith("/meta/"))
                     responseObj = message;
