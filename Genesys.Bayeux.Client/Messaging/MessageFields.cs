@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Genesys.Bayeux.Client.Messaging
+﻿namespace Genesys.Bayeux.Client.Messaging
 {
     public static class MessageFields
     {

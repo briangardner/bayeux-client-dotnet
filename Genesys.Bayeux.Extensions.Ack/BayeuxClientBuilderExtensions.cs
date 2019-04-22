@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Genesys.Bayeux.Client.Builders;
+﻿using Genesys.Bayeux.Client.Builders;
 using Genesys.Bayeux.Client.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 

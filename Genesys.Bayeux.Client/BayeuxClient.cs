@@ -6,9 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
-using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Options;
-using static Genesys.Bayeux.Client.Logging.LogProvider;
 
 namespace Genesys.Bayeux.Client
 {
@@ -19,7 +17,6 @@ namespace Genesys.Bayeux.Client
         private readonly IBayeuxClientContext _context;
         private readonly Subscriber _subscriber;
         private readonly ConnectLoop _connectLoop;
-        private readonly IList<IExtension> _extensions;
 
 
         /// <param name="eventTaskScheduler">

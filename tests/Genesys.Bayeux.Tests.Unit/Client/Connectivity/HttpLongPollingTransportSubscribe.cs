@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
-using Genesys.Bayeux.Client;
-using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
 using Genesys.Bayeux.Client.Transport;

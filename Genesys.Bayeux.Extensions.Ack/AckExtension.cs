@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Messaging;
@@ -38,7 +37,7 @@ namespace Genesys.Bayeux.Extensions.Ack
                 {
                     _ackId = Convert.ToInt32(ack);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     _ackId = default(int);
                 }

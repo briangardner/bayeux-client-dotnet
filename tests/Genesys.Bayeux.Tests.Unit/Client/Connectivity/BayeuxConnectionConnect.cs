@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
@@ -66,7 +64,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
             get
             {
                 var mock = new Mock<IBayeuxClientContext>();
-                mock.Setup(x => x.Request(It.IsAny<object>(), It.IsAny<CancellationToken>()))
+                mock.Setup(x => x.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()))
                     .Callback<object, CancellationToken>(
                         (obj, token) =>
                         {

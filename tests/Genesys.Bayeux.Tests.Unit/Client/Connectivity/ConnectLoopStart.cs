@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
@@ -19,7 +18,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
         {
             var contextMock = MockClientContext;
             var connectLoop = new ConnectLoop("none", new List<TimeSpan>(), contextMock.Object);
-            contextMock.SetupSequence(x => x.Request(It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            contextMock.SetupSequence(x => x.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(JObject.FromObject(TestMessages.SuccessfulHandshakeResponse))
                 .ReturnsAsync(JObject.FromObject(TestMessages.SuccessfulConnectResponse))
                 .ReturnsIndefinitely(() =>
@@ -36,7 +35,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
         {
             var contextMock = MockClientContext;
             var connectLoop = new ConnectLoop("none", new List<TimeSpan>(), contextMock.Object);
-            contextMock.SetupSequence(x => x.Request(It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            contextMock.SetupSequence(x => x.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(JObject.FromObject(TestMessages.SuccessfulHandshakeResponse))
                 .ReturnsAsync(JObject.FromObject(TestMessages.SuccessfulConnectResponse))
                 .ReturnsIndefinitely(() =>

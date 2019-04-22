@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,8 +8,8 @@ using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Enums;
 using Genesys.Bayeux.Client.Exceptions;
+using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Logging;
-using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Transport;
 using Newtonsoft.Json.Linq;
 
@@ -25,14 +24,16 @@ namespace Genesys.Bayeux.Client
         protected volatile int currentConnectionState = -1;
         volatile BayeuxConnection _currentConnection;
         public ConcurrentDictionary<string, AbstractChannel> Channels { get; } = new ConcurrentDictionary<string, AbstractChannel>();
+        public IEnumerable<IExtension> Extensions { get; }
 
         public event EventHandler OnNewConnection;
 
         public event EventHandler<ConnectionStateChangedArgs> ConnectionStateChanged;
 
-        public BayeuxClientContext(IBayeuxTransport transport, TaskScheduler eventTaskScheduler = null)
+        public BayeuxClientContext(IBayeuxTransport transport, IEnumerable<IExtension> extensions, TaskScheduler eventTaskScheduler = null)
         {
             _transport = transport;
+            Extensions = extensions;
             _eventTaskScheduler = ChooseEventTaskScheduler(eventTaskScheduler);
 
         }

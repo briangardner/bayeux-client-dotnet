@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Genesys.Bayeux.Client.Channels;
-using Genesys.Bayeux.Client.Extensions;
 
 namespace Genesys.Bayeux.Client
 {

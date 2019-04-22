@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Genesys.Bayeux.Client.Messaging;
-using Moq;
 using Newtonsoft.Json;
 using Xunit;
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 using Newtonsoft.Json.Linq;
 

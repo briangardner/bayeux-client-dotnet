@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
-using Genesys.Bayeux.Client.Builders;
 using Genesys.Bayeux.Client.DI;
 using Genesys.Bayeux.Client.Options;
 using Microsoft.Extensions.DependencyInjection;

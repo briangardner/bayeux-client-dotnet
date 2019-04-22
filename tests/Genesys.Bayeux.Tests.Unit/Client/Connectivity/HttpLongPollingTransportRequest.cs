@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Messaging;

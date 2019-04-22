@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Messaging;

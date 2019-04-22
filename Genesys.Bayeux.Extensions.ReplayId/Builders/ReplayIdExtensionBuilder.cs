@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Genesys.Bayeux.Extensions.ReplayId.Builders

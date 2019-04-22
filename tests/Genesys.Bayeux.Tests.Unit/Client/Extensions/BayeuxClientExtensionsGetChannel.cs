@@ -1,4 +1,5 @@
-﻿using Genesys.Bayeux.Client;
+﻿using System.Collections.Generic;
+using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Extensions;
@@ -17,7 +18,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
             {
                 HttpPost = new Mock<IHttpPost>().Object,
                 Uri = "http://localhost"
-            }.Build());
+            }.Build(), new List<IExtension>());
             var channelId = new ChannelId("/dummy");
             var channel = new BayeuxChannel(new Mock<IBayeuxClientContext>().Object, channelId);
             client.Channels.TryAdd("/dummy", channel);
@@ -33,7 +34,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
             {
                 HttpPost = new Mock<IHttpPost>().Object,
                 Uri = "http://localhost"
-            }.Build());
+            }.Build(), new List<IExtension>());
 
             var testChannel = client.GetChannel("/dummy");
             Assert.NotNull(testChannel);

@@ -1,4 +1,5 @@
-﻿using Genesys.Bayeux.Client;
+﻿using System.Collections.Generic;
+using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Options;
@@ -16,7 +17,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
             {
                 HttpPost = new Mock<IHttpPost>().Object,
                 Uri = "http://localhost"
-            }.Build());
+            }.Build(), new List<IExtension>());
 
             var testChannel = client.GetChannel("/dummy");
             Assert.Equal("/dummy", testChannel.ChannelId.ToString());
