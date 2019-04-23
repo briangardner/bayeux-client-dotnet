@@ -45,7 +45,7 @@ namespace Genesys.Bayeux.Client.Transport
             List<BayeuxMessage> requestsToSend = new List<BayeuxMessage>();
             foreach(var msg in requests)
             {
-                if (ProcessMessageToSend(msg))
+                if (this.ExtendSend(msg))
                 {
                     requestsToSend.Add(msg);
                 }
@@ -89,7 +89,7 @@ namespace Genesys.Bayeux.Client.Transport
                     responseObj = JObject.FromObject(message);
                 else
                 {
-                    if (ProcessMessageToReceive(message))
+                    if (this.ExtendReceive(message))
                     {
                         events.Add(message);
                     }
@@ -105,45 +105,6 @@ namespace Genesys.Bayeux.Client.Transport
 
             return responseObj;
         }
-
-        private bool ProcessMessageToReceive(BayeuxMessage msg)
-        {
-            if (msg.Meta)
-            {
-                if (Extensions.Any(ext => !ext.ReceiveMeta(msg)))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (Extensions.Any(ext => !ext.Receive(msg)))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private bool ProcessMessageToSend(BayeuxMessage msg)
-        {
-            if(msg.Meta)
-            {
-                if (Extensions.Any(ext => !ext.SendMeta(msg)))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (Extensions.Any(ext => !ext.Send(msg)))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
 
 
         public IDisposable Subscribe(IObserver<IMessage> observer)
