@@ -1,5 +1,6 @@
 ﻿using System;
 using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Client.Messaging;
 using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Extensions.ReplayId
@@ -17,7 +18,7 @@ namespace Genesys.Bayeux.Extensions.ReplayId
 
         public long ReplayId { get; set; }
 
-        public override JObject GetSubscribeMessage()
+        public override BayeuxMessage GetSubscribeMessage()
         {
             var msg = base.GetSubscribeMessage();
             msg.Add("replayid", ReplayId);

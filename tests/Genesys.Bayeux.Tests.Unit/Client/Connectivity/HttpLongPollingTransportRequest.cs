@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Exceptions;
+using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
 using Genesys.Bayeux.Client.Transport;
@@ -30,8 +31,8 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                     Content = new StringContent(MetaResponse.ToString())
                 });
 
-            var transport = new HttpLongPollingTransport(GetOptions(post.Object));
-            await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
+            var transport = new HttpLongPollingTransport(GetOptions(post.Object), new List<IExtension>());
+            await transport.Request(new List<BayeuxMessage>(), CancellationToken.None).ConfigureAwait(false);
             post.Verify(x => x.PostAsync(FakeUrl, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -45,8 +46,8 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                     Content = new StringContent(MetaResponse.ToString())
                 });
 
-            var transport = new HttpLongPollingTransport(GetOptions(post.Object));
-            var result = await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
+            var transport = new HttpLongPollingTransport(GetOptions(post.Object), new List<IExtension>());
+            var result = await transport.Request(new List<BayeuxMessage>(), CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(MetaResponse.ToString(), result.ToString());
         }
 
@@ -61,9 +62,9 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                 {
                     Content = new StringContent(content.ToString())
                 });
-            var transport = new HttpLongPollingTransport(GetOptions(post.Object));
+            var transport = new HttpLongPollingTransport(GetOptions(post.Object), new List<IExtension>());
             transport.Subscribe(observer.Object);
-            var result = await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
+            var result = await transport.Request(new List<BayeuxMessage>(), CancellationToken.None).ConfigureAwait(false);
             observer.Verify(x => x.OnNext(It.IsAny<IMessage>()), Times.Exactly(2));
         }
 
@@ -82,10 +83,10 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                 {
                     Content = new StringContent(content.ToString())
                 });
-            var transport = new HttpLongPollingTransport(GetOptions(post.Object));
+            var transport = new HttpLongPollingTransport(GetOptions(post.Object), new List<IExtension>());
             transport.Subscribe(observer.Object);
-            await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
-            await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false);
+            await transport.Request(new List<BayeuxMessage>(), CancellationToken.None).ConfigureAwait(false);
+            await transport.Request(new List<BayeuxMessage>(), CancellationToken.None).ConfigureAwait(false);
             observer.Verify(x => x.OnNext(It.IsAny<IMessage>()), Times.Exactly(4));
         }
 
@@ -100,9 +101,9 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                 {
                     Content = new StringContent(content.ToString())
                 });
-            var transport = new HttpLongPollingTransport(GetOptions(post.Object));
+            var transport = new HttpLongPollingTransport(GetOptions(post.Object), new List<IExtension>());
             await Assert.ThrowsAsync<BayeuxProtocolException>(async () =>
-                 await transport.Request(new List<object>(), CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
+                 await transport.Request(new List<BayeuxMessage>(), CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private Mock<IObserver<IMessage>> MockObserver => new Mock<IObserver<IMessage>>();

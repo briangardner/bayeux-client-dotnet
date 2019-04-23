@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,20 +10,20 @@ using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Client.Channels
 {
-    public interface IChannel : ISubject<IMessage>
+    public interface IChannel : ISubject<BayeuxMessage>
     {
         ChannelId ChannelId { get; }
 
     }
 
-    public abstract class AbstractChannel : IChannel, IUnsubscribe<IMessage>
+    public abstract class AbstractChannel : IChannel, IUnsubscribe<BayeuxMessage>
     {
         private readonly ILog _logger = LogProvider.GetCurrentClassLogger();
-        protected internal readonly IList<IObserver<IMessage>> observers;
+        protected internal readonly IList<IObserver<BayeuxMessage>> observers;
 
         protected AbstractChannel(IBayeuxClientContext clientContext, ChannelId id)
         {
-            observers = new List<IObserver<IMessage>>();
+            observers = new List<IObserver<BayeuxMessage>>();
             ClientContext = clientContext;
             ChannelId = id;
 
@@ -34,17 +35,17 @@ namespace Genesys.Bayeux.Client.Channels
         protected internal async Task SendSubscribe()
         {
             var message = GetSubscribeMessage();
-            await ClientContext.RequestMany(new JObject[]{ message }, new CancellationToken()).ConfigureAwait(false);
+            await ClientContext.RequestMany(new BayeuxMessage[]{ message }, new CancellationToken()).ConfigureAwait(false);
         }
 
         protected internal async Task SendUnSubscribe()
         {
-            await ClientContext.RequestMany(new JObject[]{ GetUnsubscribeMessage() }, new CancellationToken()).ConfigureAwait(false);
+            await ClientContext.RequestMany(new BayeuxMessage[]{ GetUnsubscribeMessage() }, new CancellationToken()).ConfigureAwait(false);
         }
 
-        public virtual JObject GetSubscribeMessage()
+        public virtual BayeuxMessage GetSubscribeMessage()
         {
-            var message = new JObject
+            var message = new BayeuxMessage
             {
                 {MessageFields.ChannelField, "/meta/subscribe"},
                 { MessageFields.SubscriptionField, ChannelId.ToString()}
@@ -52,9 +53,9 @@ namespace Genesys.Bayeux.Client.Channels
             return message;
         }
 
-        public virtual JObject GetUnsubscribeMessage()
+        public virtual BayeuxMessage GetUnsubscribeMessage()
         {
-            return new JObject
+            return new BayeuxMessage
             {
                 {MessageFields.ChannelField, "/meta/unsubscribe" } ,
                 { MessageFields.SubscriptionField, ChannelId.ToString() }
@@ -62,7 +63,7 @@ namespace Genesys.Bayeux.Client.Channels
         }
 
 
-        public IDisposable Subscribe(IObserver<IMessage> observer)
+        public IDisposable Subscribe(IObserver<BayeuxMessage> observer)
         {
             if (observers.Count == 0)
             {
@@ -71,7 +72,7 @@ namespace Genesys.Bayeux.Client.Channels
             if (!observers.Contains(observer))
                 observers.Add(observer);
 
-            return new Unsubscriber<AbstractChannel, IMessage>(this, observer);
+            return new Unsubscriber<AbstractChannel, BayeuxMessage>(this, observer);
         }
 
         public async Task UnsubscribeAll()
@@ -90,8 +91,22 @@ namespace Genesys.Bayeux.Client.Channels
             _logger.Error(error, "Error in {channelId} channel", ChannelId);
         }
 
-        public void OnNext(IMessage message)
+        public void OnNext(BayeuxMessage message)
         {
+            if (message.Meta)
+            {
+                if (ClientContext.Extensions.Any(ext => !ext.ReceiveMeta(message)))
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (ClientContext.Extensions.Any(ext => !ext.Receive(message)))
+                {
+                    return;
+                }
+            }
             foreach (var listener in observers)
             {
                 try
@@ -100,12 +115,12 @@ namespace Genesys.Bayeux.Client.Channels
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex, "Error in OnMessage for listener: {listener}.  Message {@message}", listener.GetType().FullName, message);
+                    _logger.ErrorException("Error in OnMessage for listener: {listener}.  Message {@message}",ex, listener.GetType().FullName, message);
                 }
             }
         }
 
-        public async Task UnsubscribeAsync(IObserver<IMessage> observer)
+        public async Task UnsubscribeAsync(IObserver<BayeuxMessage> observer)
         {
             if (observer != null && this.observers.Contains(observer))
                 observers.Remove(observer);

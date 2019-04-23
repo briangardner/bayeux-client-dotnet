@@ -10,6 +10,7 @@ using Genesys.Bayeux.Client.Enums;
 using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Logging;
+using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Transport;
 using Newtonsoft.Json.Linq;
 
@@ -61,12 +62,12 @@ namespace Genesys.Bayeux.Client
             await Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.DenyChildAttach, _eventTaskScheduler).ConfigureAwait(false);
 
 
-        public Task<JObject> Request(JObject request, CancellationToken cancellationToken)
+        public Task<JObject> Request(BayeuxMessage request, CancellationToken cancellationToken)
         {
             return RequestMany(new[] { request }, cancellationToken);
         }
 
-        public async Task<JObject> RequestMany(IEnumerable<JObject> requests, CancellationToken cancellationToken)
+        public async Task<JObject> RequestMany(IEnumerable<BayeuxMessage> requests, CancellationToken cancellationToken)
         {
             // https://docs.cometd.org/current/reference/#_messages
             // All Bayeux messages SHOULD be encapsulated in a JSON encoded array so that multiple messages may be transported together
@@ -75,12 +76,13 @@ namespace Genesys.Bayeux.Client
             {
                 AddClientId(request);
             }
+            log.Debug("Sending Request: {@enumerable}", enumerable);
             var responseObj = await _transport.Request(enumerable, cancellationToken).ConfigureAwait(false);
-
+            log.Debug("Received Response: {@responseObj}", responseObj);
             var response = responseObj.ToObject<BayeuxResponse>();
 
             if (!response.successful)
-                throw new BayeuxRequestException(response.error, responseObj["advice"].ToObject<BayeuxAdvice>());
+                throw new BayeuxRequestException(response.error, responseObj["advice"]?.ToObject<BayeuxAdvice>());
 
             return responseObj;
         }
@@ -123,7 +125,7 @@ namespace Genesys.Bayeux.Client
             _transport?.Dispose();
         }
 
-        private void AddClientId(JObject message)
+        private void AddClientId(BayeuxMessage message)
         {
             if (!message.ContainsKey("clientId") && IsConnected())
             {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
+using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Transport;
 using Newtonsoft.Json.Linq;
 
@@ -17,13 +18,13 @@ namespace Genesys.Bayeux.Client.Options
         /// </summary>
         public TimeSpan? ResponseTimeout { get; set; }
         
-        internal WebSocketTransport Build(Func<IEnumerable<JObject>,Task> eventPublisher)
+        internal WebSocketTransport Build(Func<IEnumerable<JObject>,Task> eventPublisher, IEnumerable<IExtension> extensions = null)
         {
             return new WebSocketTransport(
                 WebSocketFactory ?? (() => SystemClientWebSocket.CreateClientWebSocket()),
                 Uri ?? throw new Exception("Please set Uri."),
                 ResponseTimeout ?? TimeSpan.FromSeconds(65),
-                eventPublisher);
+                eventPublisher, extensions);
         }        
     }
 }

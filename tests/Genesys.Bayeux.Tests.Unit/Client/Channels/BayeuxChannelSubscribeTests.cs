@@ -17,7 +17,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
         public BayeuxChannelSubscribeTests()
         {
             _clientContextMock = new Mock<IBayeuxClientContext>();
-            _clientContextMock.Setup(client => client.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()))
+            _clientContextMock.Setup(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new JObject())
                 .Callback(
                     (JObject msg, CancellationToken token) => { _subscribeMessage = msg; });
@@ -28,7 +28,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
         {
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId );
             channel.Subscribe(new Mock<IObserver<IMessage>>().Object);
-            _clientContextMock.Verify(client => client.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()), Times.Once);
+            _clientContextMock.Verify(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
             channel.Subscribe(new Mock<IObserver<IMessage>>().Object);
             channel.Subscribe(new Mock<IObserver<IMessage>>().Object);
-            _clientContextMock.Verify(client => client.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()), Times.Once);
+            _clientContextMock.Verify(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]

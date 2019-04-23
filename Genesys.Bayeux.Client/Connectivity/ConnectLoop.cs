@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Genesys.Bayeux.Client.Enums;
+﻿using Genesys.Bayeux.Client.Enums;
 using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Logging;
 using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Util;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Genesys.Bayeux.Client.Connectivity
 {
@@ -173,8 +173,7 @@ namespace Genesys.Bayeux.Client.Connectivity
             }
             catch (BayeuxRequestException e)
             {
-                _lastAdvice = e.Advice;
-
+                _transportFailed = true;
                 var reconnectDelay = _reconnectDelays.GetNext();
                 Log.WarnException($"Request failed: {e.Message}. Retrying after {reconnectDelay}", e);
                 await _context.SetConnectionState(ConnectionState.Connecting).ConfigureAwait(false);
@@ -184,20 +183,23 @@ namespace Genesys.Bayeux.Client.Connectivity
 
         private async Task Handshake(CancellationToken cancellationToken)
         {
+            Log.Debug("Begin Handshake");
             await _context.SetConnectionState(ConnectionState.Connecting).ConfigureAwait(false);
-            var handshakeRequest = new
+            var handshakeRequest = new BayeuxMessage
             {
-                channel = "/meta/handshake",
-                version = "1.0",
-                supportedConnectionTypes = new[] {_connectionType}
+                {"channel",  "/meta/handshake"},
+                {"version", "1.0" },
+                {"supportedConnectionTypes", new[] {_connectionType}}
             };
-            var response = await _context.Request(JObject.FromObject(handshakeRequest), 
+            var response = await _context.Request(handshakeRequest, 
                 cancellationToken).ConfigureAwait(false);
 
             _currentConnection = new BayeuxConnection((string)response[MessageFields.ClientIdField], _context);
             _context.SetConnection(_currentConnection);
             await _context.SetConnectionState(ConnectionState.Connected).ConfigureAwait(false);
+            Log.Debug("Handshake Successful");
             ObtainAdvice(response);
+            Log.Debug("Advice {@advice}", _lastAdvice);
         }
 
         private async Task Connect(CancellationToken cancellationToken)

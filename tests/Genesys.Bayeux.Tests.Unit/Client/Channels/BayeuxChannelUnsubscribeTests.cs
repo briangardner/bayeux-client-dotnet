@@ -17,7 +17,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
         public BayeuxChannelUnsubscribeTests()
         {
             _clientContextMock = new Mock<IBayeuxClientContext>();
-            _clientContextMock.Setup(client => client.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()))
+            _clientContextMock.Setup(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()))
                 .Callback(
                     (object msg, CancellationToken token) =>
                     {
@@ -37,7 +37,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
             _clientContextMock.Reset();
             unsubscriber2.Dispose();
 
-            _clientContextMock.Verify(client => client.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()), Times.Never);
+            _clientContextMock.Verify(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
             _clientContextMock.Reset();
             unsubscriber1.Dispose();
 
-            _clientContextMock.Verify(client => client.Request(It.IsAny<JObject>(), It.IsAny<CancellationToken>()), Times.Once);
+            _clientContextMock.Verify(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]

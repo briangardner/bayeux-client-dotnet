@@ -21,7 +21,7 @@ namespace Genesys.Bayeux.Client.Connectivity
         
         public async Task<JObject> Connect(CancellationToken cancellationToken)
         {
-            var request = new JObject()
+            var request = new BayeuxMessage
             {
                 {MessageFields.ClientIdField, ClientId }, {MessageFields.ChannelField, "/meta/connect"}, { MessageFields.ConnectionTypeField, "long-polling"}
             };
@@ -35,7 +35,7 @@ namespace Genesys.Bayeux.Client.Connectivity
 
         public Task Disconnect(CancellationToken cancellationToken)
         {
-            var request = new JObject()
+            var request = new BayeuxMessage
             {
                 {MessageFields.ClientIdField, ClientId }, {MessageFields.ChannelField, "/meta/disconnect"}
             };

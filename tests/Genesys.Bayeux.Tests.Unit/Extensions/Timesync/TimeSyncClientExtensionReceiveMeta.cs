@@ -17,7 +17,7 @@ namespace Genesys.Bayeux.Tests.Unit.Extensions.Timesync
             var message = new BayeuxMessage(new Dictionary<string, object>());
             var ext = new TimesyncClientExtension();
             var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            var result = ext.ReceiveMeta(channel, message);
+            var result = ext.ReceiveMeta( message);
             Assert.True(result);
         }
 
@@ -35,7 +35,7 @@ namespace Genesys.Bayeux.Tests.Unit.Extensions.Timesync
             };
             var ext = new TimesyncClientExtension();
             var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            var result = ext.ReceiveMeta(channel, message);
+            var result = ext.ReceiveMeta( message);
             Assert.NotEqual(0, ext.Offset);
         }
 
@@ -53,7 +53,7 @@ namespace Genesys.Bayeux.Tests.Unit.Extensions.Timesync
             };
             var ext = new TimesyncClientExtension();
             var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            var result = ext.ReceiveMeta(channel, message);
+            var result = ext.ReceiveMeta( message);
             Assert.NotEqual(0, ext.Lag);
         }
 
@@ -71,7 +71,7 @@ namespace Genesys.Bayeux.Tests.Unit.Extensions.Timesync
             };
             var ext = new TimesyncClientExtension();
             var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            var result = ext.ReceiveMeta(channel, message);
+            var result = ext.ReceiveMeta( message);
             Assert.True(result);
         }
 

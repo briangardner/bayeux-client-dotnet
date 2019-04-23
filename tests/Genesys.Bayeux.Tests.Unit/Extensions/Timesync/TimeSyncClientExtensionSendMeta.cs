@@ -18,9 +18,9 @@ namespace Genesys.Bayeux.Tests.Unit.Extensions.Timesync
             var message = TestMessageWithTimesync;
             var ext = new TimesyncClientExtension();
             var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            ext.ReceiveMeta(channel, message);
+            ext.ReceiveMeta( message);
             var sendMessage = TestMessageNoTimesync;
-            ext.SendMeta(channel, sendMessage);
+            ext.SendMeta(sendMessage);
             
             var timeSync = JObject.FromObject(sendMessage.GetExt(false));
             var properties = JObject.Parse(timeSync["timesync"].ToString());
@@ -33,9 +33,9 @@ namespace Genesys.Bayeux.Tests.Unit.Extensions.Timesync
             var message = TestMessageWithTimesync;
             var ext = new TimesyncClientExtension();
             var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            ext.ReceiveMeta(channel, message);
+            ext.ReceiveMeta(message);
             var sendMessage = TestMessageNoTimesync;
-            ext.SendMeta(channel, sendMessage);
+            ext.SendMeta( sendMessage);
 
             var timeSync = JObject.FromObject(sendMessage.GetExt(false));
             var properties = JObject.Parse(timeSync["timesync"].ToString());
@@ -48,9 +48,9 @@ namespace Genesys.Bayeux.Tests.Unit.Extensions.Timesync
             var message = TestMessageWithTimesync;
             var ext = new TimesyncClientExtension();
             var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            ext.ReceiveMeta(channel, message);
+            ext.ReceiveMeta( message);
             var sendMessage = TestMessageNoTimesync;
-            ext.SendMeta(channel, sendMessage);
+            ext.SendMeta( sendMessage);
             var timeSync = JObject.FromObject(sendMessage.GetExt(false));
             var properties = JObject.Parse(timeSync["timesync"].ToString());
             Assert.NotNull(properties["o"]);
@@ -62,9 +62,9 @@ namespace Genesys.Bayeux.Tests.Unit.Extensions.Timesync
             var message = TestMessageWithTimesync;
             var ext = new TimesyncClientExtension();
             var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            ext.ReceiveMeta(channel, message);
+            ext.ReceiveMeta( message);
             var sendMessage = TestMessageNoTimesync;
-            var result = ext.SendMeta(channel, sendMessage);
+            var result = ext.SendMeta( sendMessage);
             Assert.True(result);
         }
 

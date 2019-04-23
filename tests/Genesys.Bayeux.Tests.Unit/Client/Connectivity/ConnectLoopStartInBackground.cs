@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Enums;
+using Genesys.Bayeux.Client.Messaging;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
         {
             var contextMock = MockClientContext;
             var connectLoop = new ConnectLoop("none", new List<TimeSpan>(), contextMock.Object);
-            contextMock.SetupSequence(x => x.Request(It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            contextMock.SetupSequence(x => x.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(JObject.FromObject(TestMessages.SuccessfulHandshakeResponse))
                 .ReturnsAsync(JObject.FromObject(TestMessages.SuccessfulConnectResponse))
                 .ReturnsIndefinitely(() =>
@@ -34,7 +35,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
         {
             var contextMock = MockClientContext;
             var connectLoop = new ConnectLoop("none", new List<TimeSpan>(), contextMock.Object);
-            contextMock.SetupSequence(x => x.Request(It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            contextMock.SetupSequence(x => x.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(JObject.FromObject(TestMessages.SuccessfulHandshakeResponse))
                 .ReturnsAsync(JObject.FromObject(TestMessages.SuccessfulConnectResponse))
                 .ReturnsIndefinitely(() =>

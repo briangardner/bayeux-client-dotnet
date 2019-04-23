@@ -19,15 +19,15 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
             var channel = new BayeuxChannel(client.Object, new ChannelId("/test"));
             channel.Subscribe(listener.Object);
             channel.Subscribe(listener2.Object);
-            channel.OnNext(message.Object);
+            channel.OnNext(message);
 
-            listener.Verify(x => x.OnNext(message.Object), Times.Once);
-            listener2.Verify(x => x.OnNext(message.Object), Times.Once);
+            listener.Verify(x => x.OnNext(message), Times.Once);
+            listener2.Verify(x => x.OnNext(message), Times.Once);
         }
 
 
         private Mock<IBayeuxClientContext> ClientMock => new Mock<IBayeuxClientContext>();
         private Mock<IMessageListener> MockListener => new Mock<IMessageListener>();
-        private Mock<IMessage> MockMessage => new Mock<IMessage>();
+        private BayeuxMessage MockMessage => new BayeuxMessage();
     }
 }

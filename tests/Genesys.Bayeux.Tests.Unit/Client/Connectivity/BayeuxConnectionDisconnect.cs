@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Messaging;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -41,7 +42,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
             get
             {
                 var mock = new Mock<IBayeuxClientContext>();
-                mock.Setup(x => x.Request(It.IsAny<object>(), It.IsAny<CancellationToken>()))
+                mock.Setup(x => x.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()))
                     .Callback<object, CancellationToken>(
                         (obj, token) =>
                         {

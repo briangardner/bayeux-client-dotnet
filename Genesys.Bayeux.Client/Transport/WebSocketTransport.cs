@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Exceptions;
+using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Logging;
 using Genesys.Bayeux.Client.Messaging;
 using Newtonsoft.Json;
@@ -19,24 +20,25 @@ namespace Genesys.Bayeux.Client.Transport
     {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
-        readonly Func<WebSocket> webSocketFactory;
-        readonly Uri uri;
-        readonly TimeSpan responseTimeout;
-        readonly Func<IEnumerable<JObject>, Task> eventPublisher;
+        private readonly Func<WebSocket> _webSocketFactory;
+        private readonly Uri _uri;
+        private readonly TimeSpan _responseTimeout;
+        private readonly Func<IEnumerable<JObject>, Task> _eventPublisher;
 
         WebSocket webSocket;
         Task receiverLoopTask;
         CancellationTokenSource receiverLoopCancel;
 
-        readonly ConcurrentDictionary<string, TaskCompletionSource<JObject>> pendingRequests = new ConcurrentDictionary<string, TaskCompletionSource<JObject>>();
-        long nextMessageId = 0;
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<JObject>> _pendingRequests = new ConcurrentDictionary<string, TaskCompletionSource<JObject>>();
+        private long _nextMessageId = 0;
 
-        public WebSocketTransport(Func<WebSocket> webSocketFactory, Uri uri, TimeSpan responseTimeout, Func<IEnumerable<JObject>, Task> eventPublisher)
+        public WebSocketTransport(Func<WebSocket> webSocketFactory, Uri uri, TimeSpan responseTimeout, Func<IEnumerable<JObject>, Task> eventPublisher, IEnumerable<IExtension> extensions)
         {
-            this.webSocketFactory = webSocketFactory;
-            this.uri = uri;
-            this.responseTimeout = responseTimeout;
-            this.eventPublisher = eventPublisher;
+            _webSocketFactory = webSocketFactory;
+            _uri = uri;
+            _responseTimeout = responseTimeout;
+            _eventPublisher = eventPublisher;
+            Extensions = extensions;
         }
 
         public void Dispose()
@@ -62,6 +64,8 @@ namespace Genesys.Bayeux.Client.Transport
 
         public IList<IObserver<JObject>> Observers { get; }
 
+        public IEnumerable<IExtension> Extensions { get; }
+
         public async Task Open(CancellationToken cancellationToken)
         {
             if (receiverLoopCancel != null)
@@ -72,11 +76,11 @@ namespace Genesys.Bayeux.Client.Transport
 
             webSocket?.Dispose();
 
-            webSocket = webSocketFactory();
+            webSocket = _webSocketFactory();
 
             try
             {
-                await webSocket.ConnectAsync(uri, cancellationToken).ConfigureAwait(false);
+                await webSocket.ConnectAsync(_uri, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -121,16 +125,16 @@ namespace Genesys.Bayeux.Client.Transport
         {
             if (fault == null)
             {
-                foreach (var r in pendingRequests)
+                foreach (var r in _pendingRequests)
                     r.Value.SetCanceled();
             }
             else
             {
-                foreach (var r in pendingRequests)
+                foreach (var r in _pendingRequests)
                     r.Value.SetException(fault);
             }
 
-            pendingRequests.Clear();
+            _pendingRequests.Clear();
         }
 
         async Task<Stream> ReceiveMessage(CancellationToken cancellationToken)
@@ -170,7 +174,7 @@ namespace Genesys.Bayeux.Client.Transport
                     }
                     else
                     {
-                        var found = pendingRequests.TryRemove(messageId, out var requestTask);
+                        var found = _pendingRequests.TryRemove(messageId, out var requestTask);
 
                         if (found)
                             requestTask.SetResult(response);
@@ -180,23 +184,23 @@ namespace Genesys.Bayeux.Client.Transport
                 }
 
                 if (events.Count > 0)
-                    await eventPublisher(events).ConfigureAwait(false);
+                    await _eventPublisher(events).ConfigureAwait(false);
             }
         }
 
-        public async Task<JObject> Request(IEnumerable<object> requests, CancellationToken cancellationToken)
+        public async Task<JObject> Request(IEnumerable<BayeuxMessage> requests, CancellationToken cancellationToken)
         {
             var responseTasks = new List<TaskCompletionSource<JObject>>();
             var requestsJArray = JArray.FromObject(requests);
             var messageIds = new List<string>();
             foreach (var request in requestsJArray)
             {
-                var messageId = Interlocked.Increment(ref nextMessageId).ToString();
+                var messageId = Interlocked.Increment(ref _nextMessageId).ToString();
                 request["id"] = messageId;
                 messageIds.Add(messageId);
 
                 var responseReceived = new TaskCompletionSource<JObject>();
-                pendingRequests.TryAdd(messageId, responseReceived);
+                _pendingRequests.TryAdd(messageId, responseReceived);
                 responseTasks.Add(responseReceived);
             }
             
@@ -204,13 +208,13 @@ namespace Genesys.Bayeux.Client.Transport
             Log.Debug(() => $"Posting: {messageStr}");
             await SendAsync(messageStr, cancellationToken).ConfigureAwait(false);
 
-            var timeoutTask = Task.Delay(responseTimeout, cancellationToken);
+            var timeoutTask = Task.Delay(_responseTimeout, cancellationToken);
             Task completedTask = await Task.WhenAny(
                 Task.WhenAll(responseTasks.Select(t => t.Task)),
                 timeoutTask).ConfigureAwait(false);
 
             foreach (var id in messageIds)
-                pendingRequests.TryRemove(id, out var _);
+                _pendingRequests.TryRemove(id, out var _);
 
             if (completedTask == timeoutTask)
             {

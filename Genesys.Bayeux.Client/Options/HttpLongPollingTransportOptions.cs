@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using Genesys.Bayeux.Client.Connectivity;
+using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Transport;
 using Microsoft.Extensions.Options;
 
@@ -45,7 +47,7 @@ namespace Genesys.Bayeux.Client.Options
                     {
                         HttpPost = new HttpClientHttpPost(HttpClient ?? new HttpClient()),
                         Uri = Uri
-                    }));
+                    }), new List<IExtension>());
             }
             else
             {
@@ -56,7 +58,7 @@ namespace Genesys.Bayeux.Client.Options
                 {
                     HttpPost = HttpPost,
                     Uri = Uri
-                }));
+                }), new List<IExtension>());
             }
         }        
     }

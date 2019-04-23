@@ -3,21 +3,24 @@ using System.Collections.Generic;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Messaging;
+using Genesys.Bayeux.Extensions.TimesyncClient.Logging;
 
 namespace Genesys.Bayeux.Extensions.TimesyncClient
 {
     public class TimesyncClientExtension : IExtension
     {
+        private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
         public int Offset { get; private set; }
         public int Lag { get; private set; }
 
-        public bool Receive(AbstractChannel channel, BayeuxMessage message)
+        public bool Receive(BayeuxMessage message)
         {
             return true;
         }
 
-        public bool ReceiveMeta(AbstractChannel channel, BayeuxMessage message)
+        public bool ReceiveMeta(BayeuxMessage message)
         {
+            Log.Debug("Timesync Extension - Receive Meta start");
             var ext = (Dictionary<string, object>)message.GetExt(false);
 
             var sync = (Dictionary<string, object>)ext?["timesync"];
@@ -39,21 +42,24 @@ namespace Genesys.Bayeux.Extensions.TimesyncClient
             Lag = Lag == 0 ? l2 : (Lag + l2) / 2;
             Offset = Offset == 0 ? o2 : (Offset + o2) / 2;
 
+            Log.Debug("Timesync Extension - Receive Meta end");
             return true;
         }
 
-        public bool Send(AbstractChannel channel, BayeuxMessage message)
+        public bool Send(BayeuxMessage message)
         {
             return true;
         }
 
-        public bool SendMeta(AbstractChannel channel, BayeuxMessage message)
+        public bool SendMeta(BayeuxMessage message)
         {
+            Log.Debug("Timesync Extension - Send Meta start");
             var ext = (Dictionary<string, object>)message.GetExt(true);
             var now = (DateTime.Now.Ticks - 621355968000000000) / 10000;
             // Changed JSON.Literal to string
             var timesync = "{\"tc\":" + now + ",\"l\":" + Lag + ",\"o\":" + Offset + "}";
             ext["timesync"] = timesync;
+            Log.Debug("Timesync Extension - Send Meta end");
             return true;
         }
 

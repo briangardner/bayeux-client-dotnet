@@ -5,9 +5,9 @@ namespace Genesys.Bayeux.Client.Extensions
 {
     public interface IExtension
     {
-        bool Receive(AbstractChannel channel, BayeuxMessage message);
-        bool ReceiveMeta(AbstractChannel channel, BayeuxMessage message);
-        bool Send(AbstractChannel channel, BayeuxMessage message);
-        bool SendMeta(AbstractChannel channel, BayeuxMessage message);
+        bool Receive(BayeuxMessage message);
+        bool ReceiveMeta(BayeuxMessage message);
+        bool Send(BayeuxMessage message);
+        bool SendMeta(BayeuxMessage message);
     }
 }

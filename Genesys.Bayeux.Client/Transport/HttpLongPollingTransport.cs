@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Exceptions;
+using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Logging;
 using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
@@ -23,12 +25,14 @@ namespace Genesys.Bayeux.Client.Transport
         readonly IHttpPost _httpPost;
         readonly string _url;
         private readonly IList<IObserver<IMessage>> _observers;
+        public IEnumerable<IExtension> Extensions { get; }
 
-        public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options)
+        public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options, IEnumerable<IExtension> extensions)
         {
             _httpPost = options.Value.HttpClient != null ? new HttpClientHttpPost(options.Value.HttpClient) : options.Value.HttpPost;
             _url = options.Value.Uri;
             _observers = new List<IObserver<IMessage>>();
+            Extensions = extensions;
         }
 
         public void Dispose() { }
@@ -36,9 +40,18 @@ namespace Genesys.Bayeux.Client.Transport
         public Task Open(CancellationToken cancellationToken)
             => Task.FromResult(0);
 
-        public async Task<JObject> Request(IEnumerable<object> requests, CancellationToken cancellationToken)
+        public async Task<JObject> Request(IEnumerable<BayeuxMessage> requests, CancellationToken cancellationToken)
         {
-            var messageStr = JsonConvert.SerializeObject(requests);
+            List<BayeuxMessage> requestsToSend = new List<BayeuxMessage>();
+            foreach(var msg in requests)
+            {
+                if (ProcessMessageToSend(msg))
+                {
+                    requestsToSend.Add(msg);
+                }
+            }
+            
+            var messageStr = JsonConvert.SerializeObject(requestsToSend);
             Log.Debug(() => $"Posting: {messageStr}");
 
             var httpResponse = await _httpPost.PostAsync(_url, messageStr, cancellationToken).ConfigureAwait(false);
@@ -52,12 +65,11 @@ namespace Genesys.Bayeux.Client.Transport
             httpResponse.EnsureSuccessStatusCode();
 
             var responseToken = JToken.ReadFrom(new JsonTextReader(new StreamReader(await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))));
-            Log.Debug(() => $"Received: {responseToken.ToString(Formatting.None)}");
+            Log.Debug(() => $"Received Response Token: {responseToken.ToString(Formatting.None)}");
             
             IEnumerable<JToken> tokens = responseToken is JArray ?
                 (IEnumerable<JToken>)responseToken :
                 new[] { responseToken };
-            Log.Debug("Received event(s): {@tokens}", tokens);
             // https://docs.cometd.org/current/reference/#_delivery
             // Event messages MAY be sent to the client in the same HTTP response 
             // as any other message other than a /meta/handshake response.
@@ -66,16 +78,23 @@ namespace Genesys.Bayeux.Client.Transport
 
             foreach (var token in tokens)
             {
-                JObject message = (JObject)token;
-                var channel = (string)message[MessageFields.ChannelField];
+                BayeuxMessage message = token.ToObject<BayeuxMessage>();
+                
+                var channel = message.ChannelId;
 
                 if (channel == null)
                     throw new BayeuxProtocolException("No 'channel' field in message.");
 
-                if (channel.StartsWith("/meta/"))
-                    responseObj = message;
+                if (channel.IsMeta())
+                    responseObj = JObject.FromObject(message);
                 else
-                    events.Add(new BayeuxMessage(message.ToObject<Dictionary<string,object>>()));
+                {
+                    if (ProcessMessageToReceive(message))
+                    {
+                        events.Add(message);
+                    }
+                }
+                    
             }
 
             var observable = events.ToObservable();
@@ -86,6 +105,45 @@ namespace Genesys.Bayeux.Client.Transport
 
             return responseObj;
         }
+
+        private bool ProcessMessageToReceive(BayeuxMessage msg)
+        {
+            if (msg.Meta)
+            {
+                if (Extensions.Any(ext => !ext.ReceiveMeta(msg)))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (Extensions.Any(ext => !ext.Receive(msg)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool ProcessMessageToSend(BayeuxMessage msg)
+        {
+            if(msg.Meta)
+            {
+                if (Extensions.Any(ext => !ext.SendMeta(msg)))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (Extensions.Any(ext => !ext.Send(msg)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
 
 
         public IDisposable Subscribe(IObserver<IMessage> observer)

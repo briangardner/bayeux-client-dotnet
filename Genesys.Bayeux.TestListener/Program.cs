@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Events;
 
 namespace Genesys.Bayeux.TestListener
 {
@@ -33,6 +34,8 @@ namespace Genesys.Bayeux.TestListener
                         .ReadFrom.Configuration(hostingContext.Configuration)
                         .WriteTo.Console()
                         .WriteTo.File("log.json", rollingInterval: RollingInterval.Day)
+                        .MinimumLevel.Debug()
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                         .CreateLogger();
                     loggingBuilder.AddSerilog();
                 })
@@ -58,7 +61,7 @@ namespace Genesys.Bayeux.TestListener
                         .AddAckExtension()
                         .AddErrorExtension()
                         .AddTimesyncClient()
-                        .AddReplayIdExtension().WithDistributedMemoryCache()
+                        //.AddReplayIdExtension().WithDistributedMemoryCache()
                         .UseHttpLongPolling(new HttpLongPollingTransportOptions()
                         {
                             HttpClient = salesforceApiClient.Client,

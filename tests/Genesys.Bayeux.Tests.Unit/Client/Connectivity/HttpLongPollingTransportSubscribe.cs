@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Messaging;
 using Genesys.Bayeux.Client.Options;
 using Genesys.Bayeux.Client.Transport;
@@ -15,7 +17,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
         public void Should_Return_Unsubscriber()
         {
             var observer = MockObserver;
-            var transport = new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(Options));
+            var transport = new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(Options), new List<IExtension>());
             var unsubscriber = transport.Subscribe(observer.Object);
             Assert.IsAssignableFrom<IDisposable>(unsubscriber);
         }
