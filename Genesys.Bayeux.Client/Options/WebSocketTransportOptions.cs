@@ -24,7 +24,7 @@ namespace Genesys.Bayeux.Client.Options
                 WebSocketFactory ?? (() => SystemClientWebSocket.CreateClientWebSocket()),
                 Uri ?? throw new Exception("Please set Uri."),
                 ResponseTimeout ?? TimeSpan.FromSeconds(65),
-                eventPublisher, extensions);
+                eventPublisher, extensions, new List<IObserver<JObject>>());
         }        
     }
 }

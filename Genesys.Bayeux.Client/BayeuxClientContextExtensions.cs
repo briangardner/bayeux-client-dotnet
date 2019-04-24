@@ -13,7 +13,8 @@ namespace Genesys.Bayeux.Client
             }
             var newChannelId = new ChannelId(channelId);
             var newChannel = client.NewChannel(newChannelId);
-            client.Channels.TryAdd(channelId, newChannel);
+            //client.Channels.TryAdd(channelId, newChannel);
+            client.AddChannel(channelId, newChannel);
             return newChannel;
         }
 

@@ -6,7 +6,7 @@ using Genesys.Bayeux.Extensions.ReplayId.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Genesys.Bayeux.Extensions.ReplayId
+namespace Genesys.Bayeux.Extensions.ReplayId.Extensions
 {
     public static class BayeuxClientBuilderExtensions
     {

@@ -5,7 +5,7 @@ namespace Genesys.Bayeux.Client
 {
     public class ConnectionStateChangedArgs : EventArgs
     {
-        public ConnectionState ConnectionState { get; private set; }
+        public ConnectionState ConnectionState { get; }
 
         public ConnectionStateChangedArgs(ConnectionState state)
         {

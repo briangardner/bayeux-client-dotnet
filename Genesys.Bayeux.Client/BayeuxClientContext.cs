@@ -24,6 +24,12 @@ namespace Genesys.Bayeux.Client
         private readonly TaskScheduler _eventTaskScheduler;
         protected volatile int currentConnectionState = -1;
         volatile BayeuxConnection _currentConnection;
+        public void AddChannel(string channelId, AbstractChannel channel)
+        {
+            Channels.TryAdd(channelId, channel);
+            _transport.Subscribe(channel);
+        }
+
         public ConcurrentDictionary<string, AbstractChannel> Channels { get; } = new ConcurrentDictionary<string, AbstractChannel>();
         public IEnumerable<IExtension> Extensions { get; }
 

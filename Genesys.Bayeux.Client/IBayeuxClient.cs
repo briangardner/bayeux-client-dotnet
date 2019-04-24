@@ -36,6 +36,11 @@ namespace Genesys.Bayeux.Client
         /// <param name="channels"></param>
         void RemoveSubscriptions(params ChannelId[] channels);
 
+        AbstractChannel GetChannel(ChannelId channelId);
+
+        IDisposable Subscribe<T>(ChannelId channelId, CancellationToken cancellationToken, bool throwIfNotConnected) where T : class, IMessageListener;
+        IDisposable Subscribe<T>(AbstractChannel channel, CancellationToken cancellationToken, bool throwIfNotConnected) where T : class, IMessageListener;
+
         /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
         Task Subscribe(ChannelId channel, CancellationToken cancellationToken = default(CancellationToken));
 

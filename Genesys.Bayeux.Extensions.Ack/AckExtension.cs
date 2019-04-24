@@ -22,12 +22,12 @@ namespace Genesys.Bayeux.Extensions.Ack
         public bool ReceiveMeta(BayeuxMessage message)
         {
             Log.Debug("Ack Extension - Receive Meta start");
-            if (ChannelFields.META_HANDSHAKE.Equals(message.Channel))
+            if (ChannelFields.MetaHandshake.Equals(message.Channel))
             {
                 var ext = (Dictionary<string, object>)message.GetExt(false);
                 _serverSupportsAcks = ext != null && true.Equals(ext[ExtensionField]);
             }
-            else if (_serverSupportsAcks && true.Equals(message[MessageFields.SuccessfulField]) && ChannelFields.META_CONNECT.Equals(message.Channel))
+            else if (_serverSupportsAcks && true.Equals(message[MessageFields.SuccessfulField]) && ChannelFields.MetaConnect.Equals(message.Channel))
             {
                 var ext = (Dictionary<string, object>)message.GetExt(false);
                 if (ext == null)
@@ -57,12 +57,12 @@ namespace Genesys.Bayeux.Extensions.Ack
         public bool SendMeta( BayeuxMessage message)
         {
             Log.Debug("Ack Extension - Send Meta start");
-            if (ChannelFields.META_HANDSHAKE.Equals(message.Channel))
+            if (ChannelFields.MetaHandshake.Equals(message.Channel))
             {
                 message.GetExt(true)[ExtensionField] = true;
                 _ackId = -1;
             }
-            else if (_serverSupportsAcks && ChannelFields.META_CONNECT.Equals(message.Channel))
+            else if (_serverSupportsAcks && ChannelFields.MetaConnect.Equals(message.Channel))
             {
                 message.GetExt(true)[ExtensionField] = _ackId;
             }

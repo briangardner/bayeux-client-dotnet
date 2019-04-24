@@ -24,14 +24,14 @@ namespace Genesys.Bayeux.Client.Transport
 
         readonly IHttpPost _httpPost;
         readonly string _url;
-        private readonly IList<IObserver<IMessage>> _observers;
+        private readonly IList<IObserver<BayeuxMessage>> _observers;
         public IEnumerable<IExtension> Extensions { get; }
 
         public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options, IEnumerable<IExtension> extensions)
         {
             _httpPost = options.Value.HttpClient != null ? new HttpClientHttpPost(options.Value.HttpClient) : options.Value.HttpPost;
             _url = options.Value.Uri;
-            _observers = new List<IObserver<IMessage>>();
+            _observers = new List<IObserver<BayeuxMessage>>();
             Extensions = extensions;
         }
 
@@ -74,7 +74,7 @@ namespace Genesys.Bayeux.Client.Transport
             // Event messages MAY be sent to the client in the same HTTP response 
             // as any other message other than a /meta/handshake response.
             JObject responseObj = null;
-            var events = new List<IMessage>();
+            var events = new List<BayeuxMessage>();
 
             foreach (var token in tokens)
             {
@@ -107,13 +107,13 @@ namespace Genesys.Bayeux.Client.Transport
         }
 
 
-        public IDisposable Subscribe(IObserver<IMessage> observer)
+        public IDisposable Subscribe(IObserver<BayeuxMessage> observer)
         {
             _observers.Add(observer);
-            return new Unsubscriber<HttpLongPollingTransport,IMessage>(this, observer);
+            return new Unsubscriber<HttpLongPollingTransport,BayeuxMessage>(this, observer);
         }
 
-        public async Task UnsubscribeAsync(IObserver<IMessage> observer)
+        public async Task UnsubscribeAsync(IObserver<BayeuxMessage> observer)
         {
             if (observer != null && _observers.Contains(observer))
             {

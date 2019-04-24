@@ -13,7 +13,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
     {
         private readonly Mock<IBayeuxClientContext> _clientContextMock;
         private JObject _subscribeMessage;
-        private ChannelId _channelId = new ChannelId("/dummy");
+        private readonly ChannelId _channelId = new ChannelId("/dummy");
         public BayeuxChannelSubscribeTests()
         {
             _clientContextMock = new Mock<IBayeuxClientContext>();

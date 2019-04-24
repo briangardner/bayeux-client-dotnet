@@ -15,6 +15,7 @@ namespace Genesys.Bayeux.Client
     public interface IBayeuxClientContext
     {
         event EventHandler OnNewConnection;
+        void AddChannel(string channelId, AbstractChannel channel);
         ConcurrentDictionary<string, AbstractChannel> Channels { get; }
         IEnumerable<IExtension> Extensions { get; }
         Task Open(CancellationToken cancellationToken);

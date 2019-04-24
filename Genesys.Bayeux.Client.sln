@@ -13,13 +13,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1FBAF849
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genesys.Bayeux.Tests.Unit", "tests\Genesys.Bayeux.Tests.Unit\Genesys.Bayeux.Tests.Unit.csproj", "{A74E3F97-DB47-4095-B270-267E5754B9A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genesys.Bayeux.Extensions.Ack", "Genesys.Bayeux.Extensions.Ack\Genesys.Bayeux.Extensions.Ack.csproj", "{EA8FEF8E-2638-4E4B-A8DF-9963BC5D33DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genesys.Bayeux.Extensions.Ack", "Genesys.Bayeux.Extensions.Ack\Genesys.Bayeux.Extensions.Ack.csproj", "{EA8FEF8E-2638-4E4B-A8DF-9963BC5D33DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genesys.Bayeux.Extensions.Error", "Genesys.Bayeux.Extensions.Error\Genesys.Bayeux.Extensions.Error.csproj", "{1A888B47-400A-4DD4-894D-886F0E08E9C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genesys.Bayeux.Extensions.Error", "Genesys.Bayeux.Extensions.Error\Genesys.Bayeux.Extensions.Error.csproj", "{1A888B47-400A-4DD4-894D-886F0E08E9C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genesys.Bayeux.Extensions.TimesyncClient", "Genesys.Bayeux.Extensions.TimesyncClient\Genesys.Bayeux.Extensions.TimesyncClient.csproj", "{62BC821F-50DF-43F4-8321-35E9ADDD3B10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genesys.Bayeux.Extensions.TimesyncClient", "Genesys.Bayeux.Extensions.TimesyncClient\Genesys.Bayeux.Extensions.TimesyncClient.csproj", "{62BC821F-50DF-43F4-8321-35E9ADDD3B10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Genesys.Bayeux.TestListener", "Genesys.Bayeux.TestListener\Genesys.Bayeux.TestListener.csproj", "{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Genesys.Bayeux.TestListener", "Genesys.Bayeux.TestListener\Genesys.Bayeux.TestListener.csproj", "{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

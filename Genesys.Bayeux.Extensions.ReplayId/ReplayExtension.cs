@@ -2,6 +2,7 @@
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Messaging;
+using Genesys.Bayeux.Extensions.ReplayId.Extensions;
 using Genesys.Bayeux.Extensions.ReplayId.Logging;
 
 namespace Genesys.Bayeux.Extensions.ReplayId
@@ -29,8 +30,8 @@ namespace Genesys.Bayeux.Extensions.ReplayId
         public bool SendMeta(BayeuxMessage message)
         {
             Log.Debug("Replay ID Extension - Send Meta start");
-            if (!ChannelFields.META_SUBSCRIBE.Equals(message.Channel) &&
-                !ChannelFields.META_UNSUBSCRIBE.Equals(message.Channel))
+            if (!ChannelFields.MetaSubscribe.Equals(message.Channel) &&
+                !ChannelFields.MetaUnsubscribe.Equals(message.Channel))
             {
                 return true;
             }

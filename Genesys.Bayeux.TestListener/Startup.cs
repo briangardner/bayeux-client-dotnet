@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
+using Genesys.Bayeux.Extensions.ReplayId.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,8 +14,8 @@ namespace Genesys.Bayeux.TestListener
     {
         private ILogger<Startup> _logger;
         private IApplicationLifetime _appLifetime;
-        private IServiceProvider _serviceProvider;
-        private IBayeuxClient _client;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IBayeuxClient _client;
 
         public Startup(ILogger<Startup> logger, IApplicationLifetime appLifetime, IServiceProvider serviceProvider)
         {
@@ -25,9 +26,11 @@ namespace Genesys.Bayeux.TestListener
         }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-           
-            _client.AddSubscriptions(new ChannelId( "/topic/OpportunityAccountTypes"));
-            _client.StartInBackground();
+            await _client.Start(cancellationToken).ConfigureAwait(false);
+            //_client.Subscribe<Listener.TestListener>(new ChannelId("/topic/OpportunityAccountTypes"), CancellationToken.None, true);
+            _client.Subscribe<Listener.TestListener>(new ChannelId("/topic/OpportunityAccountTypes"), -2,
+                CancellationToken.None, true);
+            //await _client.Subscribe(new ChannelId("/topic/OpportunityAccountTypes"), cancellationToken).ConfigureAwait(false);
             await Task.CompletedTask.ConfigureAwait(false);
 
         }

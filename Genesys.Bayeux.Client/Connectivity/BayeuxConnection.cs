@@ -15,7 +15,7 @@ namespace Genesys.Bayeux.Client.Connectivity
             string clientId,
             IBayeuxClientContext context)
         {
-            this.ClientId = clientId;
+            ClientId = clientId;
             this.context = context;
         }
         

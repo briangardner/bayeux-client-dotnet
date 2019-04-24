@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Genesys.Bayeux.Client.Transport
 {
-    public interface IBayeuxTransport : IDisposable, IObservable<IMessage>, IUnsubscribe<IMessage>
+    public interface IBayeuxTransport : IDisposable, IObservable<BayeuxMessage>, IUnsubscribe<BayeuxMessage>
     {
         IEnumerable<IExtension> Extensions { get; }
         Task Open(CancellationToken cancellationToken);

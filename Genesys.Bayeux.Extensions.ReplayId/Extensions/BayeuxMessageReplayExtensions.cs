@@ -1,6 +1,6 @@
 ﻿using Genesys.Bayeux.Client.Messaging;
 
-namespace Genesys.Bayeux.Extensions.ReplayId
+namespace Genesys.Bayeux.Extensions.ReplayId.Extensions
 {
     public static class BayeuxMessageReplayExtensions 
     {

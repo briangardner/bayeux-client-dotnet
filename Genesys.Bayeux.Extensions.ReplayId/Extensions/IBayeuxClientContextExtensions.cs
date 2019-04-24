@@ -1,7 +1,7 @@
 ﻿using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 
-namespace Genesys.Bayeux.Extensions.ReplayId
+namespace Genesys.Bayeux.Extensions.ReplayId.Extensions
 {
     public static class BayeuxClientExtensions
     {
@@ -14,8 +14,7 @@ namespace Genesys.Bayeux.Extensions.ReplayId
             }
             var id = new ChannelId(channelId);
             var newChannel = new DurableChannel(new BayeuxChannel(client, id), replayId );
-
-            client.Channels.TryAdd(channelId, newChannel);
+            client.AddChannel(channelId, newChannel);
             return newChannel;
         }
     }

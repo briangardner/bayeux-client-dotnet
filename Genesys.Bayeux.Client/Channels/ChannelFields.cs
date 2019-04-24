@@ -2,11 +2,11 @@
 {
     public static class ChannelFields
     {
-        public const string META = "/meta";
-        public const string META_CONNECT = META + "/connect";
-        public const string META_DISCONNECT = META + "/disconnect";
-        public const string META_HANDSHAKE = META + "/handshake";
-        public const string META_SUBSCRIBE = META + "/subscribe";
-        public const string META_UNSUBSCRIBE = META + "/unsubscribe";
+        public const string Meta = "/meta";
+        public const string MetaConnect = Meta + "/connect";
+        public const string MetaDisconnect = Meta + "/disconnect";
+        public const string MetaHandshake = Meta + "/handshake";
+        public const string MetaSubscribe = Meta + "/subscribe";
+        public const string MetaUnsubscribe = Meta + "/unsubscribe";
     }
 }

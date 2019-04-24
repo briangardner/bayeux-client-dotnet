@@ -34,9 +34,9 @@ namespace Genesys.Bayeux.Client.Connectivity
             IEnumerable<TimeSpan> reconnectDelays,
             IBayeuxClientContext context)
         {
-            this._connectionType = connectionType;
-            this._reconnectDelays = new ReconnectDelays(reconnectDelays);
-            this._context = context;
+            _connectionType = connectionType;
+            _reconnectDelays = new ReconnectDelays(reconnectDelays);
+            _context = context;
         }
 
         private readonly BooleanLatch _startLatch = new BooleanLatch();

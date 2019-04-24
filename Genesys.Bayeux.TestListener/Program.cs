@@ -7,9 +7,13 @@ using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.DI;
 using Genesys.Bayeux.Client.Options;
 using Genesys.Bayeux.Extensions.Ack;
+using Genesys.Bayeux.Extensions.Ack.Extensions;
 using Genesys.Bayeux.Extensions.Error;
+using Genesys.Bayeux.Extensions.Error.Extensions;
 using Genesys.Bayeux.Extensions.ReplayId;
+using Genesys.Bayeux.Extensions.ReplayId.Extensions;
 using Genesys.Bayeux.Extensions.TimesyncClient;
+using Genesys.Bayeux.Extensions.TimesyncClient.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +45,8 @@ namespace Genesys.Bayeux.TestListener
                 })
                 .ConfigureServices((hostingContext, services) =>
                 {
+                    services.AddTransient<IMessageListener, Listener.TestListener>();
+
                     services.AddSalesforceApi(options =>
                     {
                         options.ApiVersion = "45";
@@ -61,7 +67,7 @@ namespace Genesys.Bayeux.TestListener
                         .AddAckExtension()
                         .AddErrorExtension()
                         .AddTimesyncClient()
-                        //.AddReplayIdExtension().WithDistributedMemoryCache()
+                        .AddReplayIdExtension().WithDistributedMemoryCache()
                         .UseHttpLongPolling(new HttpLongPollingTransportOptions()
                         {
                             HttpClient = salesforceApiClient.Client,

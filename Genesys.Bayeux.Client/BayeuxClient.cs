@@ -15,6 +15,7 @@ namespace Genesys.Bayeux.Client
         internal static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
         private readonly IBayeuxClientContext _context;
+        private readonly IEnumerable<IMessageListener> _messageListeners;
         private readonly Subscriber _subscriber;
         private readonly ConnectLoop _connectLoop;
 
@@ -30,15 +31,18 @@ namespace Genesys.Bayeux.Client
         /// is null, then a new TaskScheduler with ordered execution will be created.
         /// </para>
         /// </param>
+        /// <param name="messageListeners">Collection of Listeners</param>
         /// <param name="delayOptions">
         /// When a request results in network errors, reconnection trials will be delayed based on the 
         /// values passed here. The last element of the collection will be re-used indefinitely.
         /// </param>
         public BayeuxClient(
             IBayeuxClientContext context,
+            IEnumerable<IMessageListener> messageListeners,
             ReconnectDelayOptions delayOptions = null)
         {
             _context = context;
+            _messageListeners = messageListeners;
             _connectLoop = new ConnectLoop("long-polling", delayOptions?.ReconnectDelays, _context);
             _subscriber = new Subscriber(_context);
             _context.OnNewConnection += OnNewConnection;
@@ -96,6 +100,22 @@ namespace Genesys.Bayeux.Client
         public void RemoveSubscriptions(params ChannelId[] channels) =>
             UnsubscribeImpl(channels, CancellationToken.None, throwIfNotConnected: false);
 
+        public AbstractChannel GetChannel(ChannelId channelId)
+        {
+            return _context.GetChannel(channelId.ToString());
+        }
+
+        public IDisposable Subscribe<T>(ChannelId channelId, CancellationToken cancellationToken, bool throwIfNotConnected) where T : class, IMessageListener
+        {
+            var channel = _context.GetChannel(channelId.ToString());
+            return Subscribe<T>(channel, cancellationToken, throwIfNotConnected);
+        }
+
+        public IDisposable Subscribe<T>(AbstractChannel channel, CancellationToken cancellationToken, bool throwIfNotConnected) where T : class, IMessageListener
+        {
+            var listener = GetListener<T>();
+            return channel.Subscribe(listener);
+        }
 
         /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
         public Task Subscribe(ChannelId channel, CancellationToken cancellationToken = default(CancellationToken)) =>
@@ -114,6 +134,22 @@ namespace Genesys.Bayeux.Client
             UnsubscribeImpl(channels, cancellationToken, throwIfNotConnected: true);
 
         #endregion
+
+        protected T GetListener<T>() where T : IMessageListener
+        {
+            foreach (var item in _messageListeners)
+            {
+                if (item.GetType() != typeof(T))
+                {
+                    continue;
+                }
+
+                Log.Debug("Found Listener match");
+                return (T)item;
+            }
+
+            throw new ApplicationException($"{typeof(T).Name} hander is not found in the registry");
+        }
 
         private Task SubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {

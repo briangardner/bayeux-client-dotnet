@@ -2,13 +2,13 @@
 using Genesys.Bayeux.Client.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Genesys.Bayeux.Extensions.Error
+namespace Genesys.Bayeux.Extensions.TimesyncClient.Extensions
 {
     public static class BayeuxClientBuilderExtensions
     {
-        public static IBayeuxClientBuilder AddErrorExtension(this IBayeuxClientBuilder builder)
+        public static IBayeuxClientBuilder AddTimesyncClient(this IBayeuxClientBuilder builder)
         {
-            builder.Services.AddTransient<IExtension, ErrorExtension>();
+            builder.Services.AddTransient<IExtension, TimesyncClientExtension>();
             return new BayeuxClientBuilder(builder.Services);
         }
     }

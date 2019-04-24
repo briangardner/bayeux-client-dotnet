@@ -2,7 +2,7 @@
 using Genesys.Bayeux.Client.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Genesys.Bayeux.Extensions.Ack
+namespace Genesys.Bayeux.Extensions.Ack.Extensions
 {
     public static class BayeuxClientBuilderExtensions
     {

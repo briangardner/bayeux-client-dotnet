@@ -32,13 +32,14 @@ namespace Genesys.Bayeux.Client.Transport
         private readonly ConcurrentDictionary<string, TaskCompletionSource<JObject>> _pendingRequests = new ConcurrentDictionary<string, TaskCompletionSource<JObject>>();
         private long _nextMessageId = 0;
 
-        public WebSocketTransport(Func<WebSocket> webSocketFactory, Uri uri, TimeSpan responseTimeout, Func<IEnumerable<JObject>, Task> eventPublisher, IEnumerable<IExtension> extensions)
+        public WebSocketTransport(Func<WebSocket> webSocketFactory, Uri uri, TimeSpan responseTimeout, Func<IEnumerable<JObject>, Task> eventPublisher, IEnumerable<IExtension> extensions, IList<IObserver<JObject>> observers)
         {
             _webSocketFactory = webSocketFactory;
             _uri = uri;
             _responseTimeout = responseTimeout;
             _eventPublisher = eventPublisher;
             Extensions = extensions;
+            Observers = observers;
         }
 
         public void Dispose()
@@ -244,12 +245,12 @@ namespace Genesys.Bayeux.Client.Transport
             }
         }
 
-        public IDisposable Subscribe(IObserver<IMessage> observer)
+        public IDisposable Subscribe(IObserver<BayeuxMessage> observer)
         {
             throw new NotImplementedException();
         }
 
-        public Task UnsubscribeAsync(IObserver<IMessage> observer)
+        public Task UnsubscribeAsync(IObserver<BayeuxMessage> observer)
         {
             throw new NotImplementedException();
         }

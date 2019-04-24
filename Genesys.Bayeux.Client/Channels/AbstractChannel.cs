@@ -19,18 +19,18 @@ namespace Genesys.Bayeux.Client.Channels
     public abstract class AbstractChannel : IChannel, IUnsubscribe<BayeuxMessage>
     {
         private readonly ILog _logger = LogProvider.GetCurrentClassLogger();
-        protected internal readonly IList<IObserver<BayeuxMessage>> observers;
+        public IList<IObserver<BayeuxMessage>> Observers { get; protected set; }
 
         protected AbstractChannel(IBayeuxClientContext clientContext, ChannelId id)
         {
-            observers = new List<IObserver<BayeuxMessage>>();
+            Observers = new List<IObserver<BayeuxMessage>>();
             ClientContext = clientContext;
             ChannelId = id;
 
         }
 
         public IBayeuxClientContext ClientContext { get; }
-        public ChannelId ChannelId { get; private set; }
+        public ChannelId ChannelId { get; }
 
         protected internal async Task SendSubscribe()
         {
@@ -65,19 +65,19 @@ namespace Genesys.Bayeux.Client.Channels
 
         public IDisposable Subscribe(IObserver<BayeuxMessage> observer)
         {
-            if (observers.Count == 0)
+            if (!Observers.Contains(observer))
+                Observers.Add(observer);
+            if (Observers.Count == 1)
             {
                 SendSubscribe().GetAwaiter().GetResult();
             }
-            if (!observers.Contains(observer))
-                observers.Add(observer);
 
             return new Unsubscriber<AbstractChannel, BayeuxMessage>(this, observer);
         }
 
         public async Task UnsubscribeAll()
         {
-            observers.Clear();
+            Observers.Clear();
             await SendUnSubscribe().ConfigureAwait(false);
         }
 
@@ -93,6 +93,11 @@ namespace Genesys.Bayeux.Client.Channels
 
         public void OnNext(BayeuxMessage message)
         {
+            if (!message.ChannelId.Equals(ChannelId))
+            {
+                _logger.Debug("Skipping Message.  Message ChannelId {msgChannel} does not match ChannelId {channel}", message.ChannelId, ChannelId);
+                return;
+            }
             if (message.Meta)
             {
                 if (ClientContext.Extensions.Any(ext => !ext.ReceiveMeta(message)))
@@ -107,7 +112,7 @@ namespace Genesys.Bayeux.Client.Channels
                     return;
                 }
             }
-            foreach (var listener in observers)
+            foreach (var listener in Observers)
             {
                 try
                 {
@@ -122,9 +127,9 @@ namespace Genesys.Bayeux.Client.Channels
 
         public async Task UnsubscribeAsync(IObserver<BayeuxMessage> observer)
         {
-            if (observer != null && this.observers.Contains(observer))
-                observers.Remove(observer);
-            if (observers.Count == 0)
+            if (observer != null && Observers.Contains(observer))
+                Observers.Remove(observer);
+            if (Observers.Count == 0)
             {
                 await SendUnSubscribe().ConfigureAwait(false);
             }
