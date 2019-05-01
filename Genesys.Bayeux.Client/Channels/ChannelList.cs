@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Genesys.Bayeux.Client.Channels
 {
-    internal class ChannelList
+    public class ChannelList
     {
         readonly List<ChannelId> items;
         readonly object syncRoot;

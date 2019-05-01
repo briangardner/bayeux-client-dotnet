@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
 using Genesys.Bayeux.Client.Connectivity;
@@ -16,7 +17,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
         {
             var client = new BayeuxClientContext(new HttpLongPollingTransportOptions
             {
-                HttpPost = new Mock<IHttpPost>().Object,
+                HttpClient = new HttpClient(new Mock<HttpMessageHandler>().Object),
                 Uri = "http://localhost"
             }.Build(), new List<IExtension>());
             var channelId = new ChannelId("/dummy");
@@ -32,7 +33,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
         {
             var client = new BayeuxClientContext(new HttpLongPollingTransportOptions
             {
-                HttpPost = new Mock<IHttpPost>().Object,
+                HttpClient = new HttpClient(new Mock<HttpMessageHandler>().Object),
                 Uri = "http://localhost"
             }.Build(), new List<IExtension>());
 

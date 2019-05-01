@@ -2,7 +2,7 @@
 
 namespace Genesys.Bayeux.Client
 {
-    static class BayeuxClientContextExtensions
+    public static class IBayeuxClientContextExtensions
     {
         public static AbstractChannel GetChannel(this IBayeuxClientContext client, string channelId)
         {
@@ -13,7 +13,6 @@ namespace Genesys.Bayeux.Client
             }
             var newChannelId = new ChannelId(channelId);
             var newChannel = client.NewChannel(newChannelId);
-            //client.Channels.TryAdd(channelId, newChannel);
             client.AddChannel(channelId, newChannel);
             return newChannel;
         }

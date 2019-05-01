@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Net.Http;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Genesys.Bayeux.Client.Channels;
-using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Exceptions;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Logging;
@@ -22,14 +22,14 @@ namespace Genesys.Bayeux.Client.Transport
     {
         private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
-        readonly IHttpPost _httpPost;
+        private readonly HttpClient _httpClient;
         readonly string _url;
         private readonly IList<IObserver<BayeuxMessage>> _observers;
         public IEnumerable<IExtension> Extensions { get; }
 
         public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options, IEnumerable<IExtension> extensions)
         {
-            _httpPost = options.Value.HttpClient != null ? new HttpClientHttpPost(options.Value.HttpClient) : options.Value.HttpPost;
+            _httpClient = options.Value.HttpClient;
             _url = options.Value.Uri;
             _observers = new List<IObserver<BayeuxMessage>>();
             Extensions = extensions;
@@ -54,7 +54,7 @@ namespace Genesys.Bayeux.Client.Transport
             var messageStr = JsonConvert.SerializeObject(requestsToSend);
             Log.Debug(() => $"Posting: {messageStr}");
 
-            var httpResponse = await _httpPost.PostAsync(_url, messageStr, cancellationToken).ConfigureAwait(false);
+            var httpResponse = await _httpClient.PostAsync(_url, new StringContent(messageStr, Encoding.UTF8, "application/json"), cancellationToken).ConfigureAwait(false);
 
             if (!httpResponse.IsSuccessStatusCode)
             {

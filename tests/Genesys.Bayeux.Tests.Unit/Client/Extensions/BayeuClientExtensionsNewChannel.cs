@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Connectivity;
 using Genesys.Bayeux.Client.Extensions;
@@ -15,7 +16,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Extensions
         {
             var client = new BayeuxClientContext(new HttpLongPollingTransportOptions
             {
-                HttpPost = new Mock<IHttpPost>().Object,
+                HttpClient = new HttpClient(new Mock<HttpMessageHandler>().Object),
                 Uri = "http://localhost"
             }.Build(), new List<IExtension>());
 

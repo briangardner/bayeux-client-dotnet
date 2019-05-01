@@ -5,6 +5,7 @@
     {
         public string reconnect;
         public int interval = 0;
+        public int? timeout;
     }
     #pragma warning restore 0649
 }

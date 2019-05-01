@@ -3,12 +3,12 @@ using Genesys.Bayeux.Client.Channels;
 
 namespace Genesys.Bayeux.Client
 {
-    internal class Subscriber
+    internal class SubscriberCache : ISubscriberCache
     {
         readonly IBayeuxClientContext _client;
         readonly ChannelList _subscribedChannels = new ChannelList();
 
-        public Subscriber(IBayeuxClientContext client)
+        public SubscriberCache(IBayeuxClientContext client)
         {
             _client = client;
         }

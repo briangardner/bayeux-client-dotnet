@@ -30,17 +30,15 @@ namespace Genesys.Bayeux.Extensions.ReplayId
         public bool SendMeta(BayeuxMessage message)
         {
             Log.Debug("Replay ID Extension - Send Meta start");
-            if (!ChannelFields.MetaSubscribe.Equals(message.Channel) &&
-                !ChannelFields.MetaUnsubscribe.Equals(message.Channel))
+            if (ChannelFields.MetaSubscribe.Equals(message.Channel) ||
+                ChannelFields.MetaUnsubscribe.Equals(message.Channel))
             {
-                return true;
+                var value = new Dictionary<string, object>
+                {
+                    { message.Subscription, message.GetReplayId() }
+                };
+                message.GetExt(true)[ExtensionName] = value;
             }
-            var value = new Dictionary<string, object>
-            {
-                { message.Subscription, message.GetReplayId() }
-            };
-
-            message.GetExt(true)[ExtensionName] = value;
             Log.Debug("Replay ID Extension - Send Meta end");
             return true;
         }

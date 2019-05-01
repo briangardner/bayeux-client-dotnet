@@ -22,7 +22,6 @@ namespace Genesys.Bayeux.Client.DI
             builder.Services.Configure<HttpLongPollingTransportOptions>(options =>
                 {
                     options.HttpClient = httpLongPollingTransportOptions.HttpClient;
-                    options.HttpPost = httpLongPollingTransportOptions.HttpPost;
                     options.Uri = httpLongPollingTransportOptions.Uri;
                 });
             builder.Services.AddTransient<IBayeuxTransport, HttpLongPollingTransport>();

@@ -1,4 +1,5 @@
 ﻿using System;
+using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Builders;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Extensions.ReplayId.Builders;
@@ -13,6 +14,7 @@ namespace Genesys.Bayeux.Extensions.ReplayId.Extensions
         public static IReplayIdExtensionBuilder AddReplayIdExtension(this IBayeuxClientBuilder builder)
         {
             builder.Services.AddTransient<IExtension, ReplayExtension>();
+            builder.Services.AddTransient<ISubscriberCache, ReplaySubscriberCache>();
             return new ReplayIdExtensionBuilder(builder.Services);
         }
         public static IBayeuxClientBuilder WithDistributedMemoryCache(this IReplayIdExtensionBuilder builder)
@@ -21,6 +23,7 @@ namespace Genesys.Bayeux.Extensions.ReplayId.Extensions
             return new BayeuxClientBuilder(builder.Services);
         }
 
+        // ReSharper disable once UnusedMember.Global
         public static IBayeuxClientBuilder WithSqlServerDistributedCache(this IReplayIdExtensionBuilder builder,
             Action<SqlServerCacheOptions> cacheConfig)
         {

@@ -18,7 +18,7 @@ namespace Genesys.Bayeux.TestListener.Listener
             
         }
 
-        public void OnNext(IMessage value)
+        public void OnNext(BayeuxMessage value)
         {
             _log.Info("Message Received: {$message}", value);
         }

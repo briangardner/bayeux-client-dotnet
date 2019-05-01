@@ -40,6 +40,7 @@ namespace Genesys.Bayeux.TestListener
                         .WriteTo.File("log.json", rollingInterval: RollingInterval.Day)
                         .MinimumLevel.Debug()
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                        //.Enrich.FromLogContext()
                         .CreateLogger();
                     loggingBuilder.AddSerilog();
                 })
@@ -62,7 +63,7 @@ namespace Genesys.Bayeux.TestListener
                     });
                     var provider = services.BuildServiceProvider();
                     var salesforceApiClient = provider.GetService<ISalesforceApiClient>();
-                    salesforceApiClient.Client.Timeout = new TimeSpan(0, 0, 5, 0, 0);
+                    salesforceApiClient.Client.Timeout = new TimeSpan(0, 0, 2, 10, 0);
                     services.UseBayeuxClient()
                         .AddAckExtension()
                         .AddErrorExtension()

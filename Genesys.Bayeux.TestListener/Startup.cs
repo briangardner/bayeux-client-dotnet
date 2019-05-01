@@ -28,7 +28,7 @@ namespace Genesys.Bayeux.TestListener
         {
             await _client.Start(cancellationToken).ConfigureAwait(false);
             //_client.Subscribe<Listener.TestListener>(new ChannelId("/topic/OpportunityAccountTypes"), CancellationToken.None, true);
-            _client.Subscribe<Listener.TestListener>(new ChannelId("/topic/OpportunityAccountTypes"), -2,
+            _client.Subscribe<Listener.TestListener>(_serviceProvider, new ChannelId("/topic/OpportunityAccountTypes2"), -2,
                 CancellationToken.None, true);
             //await _client.Subscribe(new ChannelId("/topic/OpportunityAccountTypes"), cancellationToken).ConfigureAwait(false);
             await Task.CompletedTask.ConfigureAwait(false);
@@ -38,7 +38,6 @@ namespace Genesys.Bayeux.TestListener
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             await _client.Stop(cancellationToken).ConfigureAwait(false);
-            //throw new NotImplementedException();
         }
     }
 }

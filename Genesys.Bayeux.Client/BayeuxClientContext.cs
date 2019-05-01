@@ -24,11 +24,6 @@ namespace Genesys.Bayeux.Client
         private readonly TaskScheduler _eventTaskScheduler;
         protected volatile int currentConnectionState = -1;
         volatile BayeuxConnection _currentConnection;
-        public void AddChannel(string channelId, AbstractChannel channel)
-        {
-            Channels.TryAdd(channelId, channel);
-            _transport.Subscribe(channel);
-        }
 
         public ConcurrentDictionary<string, AbstractChannel> Channels { get; } = new ConcurrentDictionary<string, AbstractChannel>();
         public IEnumerable<IExtension> Extensions { get; }
@@ -36,6 +31,10 @@ namespace Genesys.Bayeux.Client
         public event EventHandler OnNewConnection;
 
         public event EventHandler<ConnectionStateChangedArgs> ConnectionStateChanged;
+
+
+        
+
 
         public BayeuxClientContext(IBayeuxTransport transport, IEnumerable<IExtension> extensions, TaskScheduler eventTaskScheduler = null)
         {
@@ -50,6 +49,11 @@ namespace Genesys.Bayeux.Client
         Task IBayeuxClientContext.SetConnectionState(ConnectionState newState)
             => OnConnectionStateChangedAsync(newState);
 
+        public void AddChannel(string channelId, AbstractChannel channel)
+        {
+            Channels.TryAdd(channelId, channel);
+            _transport.Subscribe(channel);
+        }
 
         public async Task Disconnect(CancellationToken cancellationToken)
         {
@@ -60,8 +64,7 @@ namespace Genesys.Bayeux.Client
 
         public bool IsConnected()
         {
-            var connection = _currentConnection;
-            return connection != null;
+            return currentConnectionState == (int) ConnectionState.Connected;
         }
 
         async Task RunInEventTaskScheduler(Action action) =>
@@ -82,9 +85,9 @@ namespace Genesys.Bayeux.Client
             {
                 AddClientId(request);
             }
-            log.Debug("Sending Request: {@enumerable}", enumerable);
+            log.Debug("Sending Request: {$enumerable}", enumerable);
             var responseObj = await _transport.Request(enumerable, cancellationToken).ConfigureAwait(false);
-            log.Debug("Received Response: {@responseObj}", responseObj);
+            log.Debug("Received Response: {$responseObj}", responseObj);
             var response = responseObj.ToObject<BayeuxResponse>();
 
             if (!response.successful)
@@ -133,7 +136,7 @@ namespace Genesys.Bayeux.Client
 
         private void AddClientId(BayeuxMessage message)
         {
-            if (!message.ContainsKey("clientId") && IsConnected())
+            if (!message.ContainsKey("clientId") &&  currentConnectionState == (int)ConnectionState.Connected)
             {
                 message["clientId"] = _currentConnection.ClientId;
             }

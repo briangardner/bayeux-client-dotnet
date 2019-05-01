@@ -15,6 +15,7 @@ namespace Genesys.Bayeux.Client.Connectivity
     internal class ConnectLoop : IDisposable
     {
         private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        private const int ReadTimeOut = 120 * 1000;
 
         private readonly string _connectionType;
         private readonly ReconnectDelays _reconnectDelays;
@@ -114,6 +115,7 @@ namespace Genesys.Bayeux.Client.Connectivity
                     {
                         _transportClosed = false;
                         Log.Info($"Re-opening transport due to previously failed request.");
+                        await _context.Disconnect(_pollCancel.Token).ConfigureAwait(false);
                         await _context.Open(_pollCancel.Token).ConfigureAwait(false);
                     }
 
@@ -174,6 +176,7 @@ namespace Genesys.Bayeux.Client.Connectivity
             catch (BayeuxRequestException e)
             {
                 _transportFailed = true;
+                _currentConnection = null;
                 var reconnectDelay = _reconnectDelays.GetNext();
                 Log.WarnException($"Request failed: {e.Message}. Retrying after {reconnectDelay}", e);
                 await _context.SetConnectionState(ConnectionState.Connecting).ConfigureAwait(false);
@@ -189,14 +192,16 @@ namespace Genesys.Bayeux.Client.Connectivity
             {
                 {"channel",  "/meta/handshake"},
                 {"version", "1.0" },
-                {"supportedConnectionTypes", new[] {_connectionType}}
+                {"supportedConnectionTypes", new[] {_connectionType}},
+                {"timeout",  _lastAdvice.timeout ?? ReadTimeOut}
             };
+            
             var response = await _context.Request(handshakeRequest, 
                 cancellationToken).ConfigureAwait(false);
 
             _currentConnection = new BayeuxConnection((string)response[MessageFields.ClientIdField], _context);
-            _context.SetConnection(_currentConnection);
             await _context.SetConnectionState(ConnectionState.Connected).ConfigureAwait(false);
+            _context.SetConnection(_currentConnection);
             Log.Debug("Handshake Successful");
             ObtainAdvice(response);
             Log.Debug("Advice {@advice}", _lastAdvice);

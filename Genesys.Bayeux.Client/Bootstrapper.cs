@@ -7,9 +7,9 @@ namespace Genesys.Bayeux.Client
     {
         public static IBayeuxClientBuilder UseBayeuxClient(this IServiceCollection services)
         {
-            services.AddTransient<IBayeuxClientContext, BayeuxClientContext>();
+            services.AddSingleton<IBayeuxClientContext, BayeuxClientContext>();
             services.AddTransient<IBayeuxClient, BayeuxClient>();
-
+            services.AddTransient<ISubscriberCache, SubscriberCache>();
             return new BayeuxClientBuilder(services);
         }
     }

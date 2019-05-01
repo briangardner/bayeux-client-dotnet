@@ -32,7 +32,7 @@ namespace Genesys.Bayeux.Client.Channels
         public IBayeuxClientContext ClientContext { get; }
         public ChannelId ChannelId { get; }
 
-        protected internal async Task SendSubscribe()
+        public async Task SendSubscribe()
         {
             var message = GetSubscribeMessage();
             await ClientContext.RequestMany(new BayeuxMessage[]{ message }, new CancellationToken()).ConfigureAwait(false);
@@ -91,7 +91,7 @@ namespace Genesys.Bayeux.Client.Channels
             _logger.Error(error, "Error in {channelId} channel", ChannelId);
         }
 
-        public void OnNext(BayeuxMessage message)
+        public virtual void OnNext(BayeuxMessage message)
         {
             if (!message.ChannelId.Equals(ChannelId))
             {
@@ -100,15 +100,19 @@ namespace Genesys.Bayeux.Client.Channels
             }
             if (message.Meta)
             {
-                if (ClientContext.Extensions.Any(ext => !ext.ReceiveMeta(message)))
+                foreach (var ext in ClientContext.Extensions)
                 {
+                    if (ext.ReceiveMeta(message)) continue;
+                    _logger.Debug("Skipping Message. {ext} ReceiveMeta was false", ext.GetType().Name);
                     return;
                 }
             }
             else
             {
-                if (ClientContext.Extensions.Any(ext => !ext.Receive(message)))
+                foreach (var ext in ClientContext.Extensions)
                 {
+                    if (ext.Receive(message)) continue;
+                    _logger.Debug("Skipping Message. {ext} Receive was false", ext.GetType().Name);
                     return;
                 }
             }
@@ -121,6 +125,7 @@ namespace Genesys.Bayeux.Client.Channels
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error in OnMessage for listener: {listener}.  Message {@message}",ex, listener.GetType().FullName, message);
+                    throw;
                 }
             }
         }

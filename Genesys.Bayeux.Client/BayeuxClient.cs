@@ -16,7 +16,7 @@ namespace Genesys.Bayeux.Client
 
         private readonly IBayeuxClientContext _context;
         private readonly IEnumerable<IMessageListener> _messageListeners;
-        private readonly Subscriber _subscriber;
+        private readonly ISubscriberCache _subscriberCache;
         private readonly ConnectLoop _connectLoop;
 
 
@@ -32,6 +32,7 @@ namespace Genesys.Bayeux.Client
         /// </para>
         /// </param>
         /// <param name="messageListeners">Collection of Listeners</param>
+        /// <param name="subscriberCache"></param>
         /// <param name="delayOptions">
         /// When a request results in network errors, reconnection trials will be delayed based on the 
         /// values passed here. The last element of the collection will be re-used indefinitely.
@@ -39,12 +40,13 @@ namespace Genesys.Bayeux.Client
         public BayeuxClient(
             IBayeuxClientContext context,
             IEnumerable<IMessageListener> messageListeners,
+            ISubscriberCache subscriberCache,
             ReconnectDelayOptions delayOptions = null)
         {
             _context = context;
             _messageListeners = messageListeners;
             _connectLoop = new ConnectLoop("long-polling", delayOptions?.ReconnectDelays, _context);
-            _subscriber = new Subscriber(_context);
+            _subscriberCache = subscriberCache;
             _context.OnNewConnection += OnNewConnection;
         }
 
@@ -79,7 +81,7 @@ namespace Genesys.Bayeux.Client
 
         private void OnNewConnection(object sender, EventArgs e)
         {
-            _subscriber.OnConnected();
+            _subscriberCache.OnConnected();
         }
 
         #region Public subscription methods
@@ -114,6 +116,7 @@ namespace Genesys.Bayeux.Client
         public IDisposable Subscribe<T>(AbstractChannel channel, CancellationToken cancellationToken, bool throwIfNotConnected) where T : class, IMessageListener
         {
             var listener = GetListener<T>();
+            _subscriberCache.AddSubscription(new []{ channel.ChannelId });
             return channel.Subscribe(listener);
         }
 
@@ -154,14 +157,14 @@ namespace Genesys.Bayeux.Client
         private Task SubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
             var channelIds = channels as ChannelId[] ?? channels.ToArray();
-            _subscriber.AddSubscription(channelIds);
+            _subscriberCache.AddSubscription(channelIds);
             return RequestSubscribe(channelIds, cancellationToken, throwIfNotConnected);
         }
 
         private Task UnsubscribeImpl(IEnumerable<ChannelId> channels, CancellationToken cancellationToken, bool throwIfNotConnected)
         {
             var channelIds = channels as ChannelId[] ?? channels.ToArray();
-            _subscriber.RemoveSubscription(channelIds);
+            _subscriberCache.RemoveSubscription(channelIds);
             return RequestUnsubscribe(channelIds, cancellationToken, throwIfNotConnected);
         }
 
