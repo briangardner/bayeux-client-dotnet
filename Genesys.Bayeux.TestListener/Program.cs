@@ -17,6 +17,7 @@ using Genesys.Bayeux.Extensions.TimesyncClient.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
 using Serilog;
 using Serilog.Events;
 
@@ -40,7 +41,6 @@ namespace Genesys.Bayeux.TestListener
                         .WriteTo.File("log.json", rollingInterval: RollingInterval.Day)
                         .MinimumLevel.Debug()
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                        //.Enrich.FromLogContext()
                         .CreateLogger();
                     loggingBuilder.AddSerilog();
                 })

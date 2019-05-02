@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using Newtonsoft.Json.Linq;
+using Polly;
 using Xunit;
 
 namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
@@ -104,7 +105,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                 })
                 .Verifiable();
             var client = new HttpClient(handler.Object);
-            var transport = new HttpLongPollingTransport(GetOptions(client), new List<IExtension>());
+            var transport = new HttpLongPollingTransport(GetOptions(client), new List<IExtension>(), Policy.NoOp());
             await Assert.ThrowsAsync<BayeuxProtocolException>(async () =>
                  await transport.Request(new List<BayeuxMessage>(), CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
         }

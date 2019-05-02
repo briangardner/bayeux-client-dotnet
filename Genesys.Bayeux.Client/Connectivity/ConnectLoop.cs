@@ -75,12 +75,12 @@ namespace Genesys.Bayeux.Client.Connectivity
                     await Poll().ConfigureAwait(false);
 
                 await _context.SetConnectionState(ConnectionState.Disconnected).ConfigureAwait(false);
-                Log.Info("Long-polling stopped.");
+                Log.Warn("Long-polling stopped.");
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
                 await _context.SetConnectionState(ConnectionState.Disconnected).ConfigureAwait(false);
-                Log.Info("Long-polling stopped.");
+                Log.WarnException("Long-polling stopped.", ex);
             }
             catch (Exception e)
             {

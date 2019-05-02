@@ -98,6 +98,7 @@ namespace Genesys.Bayeux.Client
 
         protected internal virtual async Task  OnConnectionStateChangedAsync(ConnectionState state)
         {
+            log.Info("Changing ConnectionState from {current} to {newState}",  (ConnectionState)currentConnectionState, state);
             var oldConnectionState = Interlocked.Exchange(ref currentConnectionState, (int)state);
 
             if (oldConnectionState != (int)state)

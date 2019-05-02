@@ -15,11 +15,13 @@ using Genesys.Bayeux.Client.Options;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Polly;
 
 namespace Genesys.Bayeux.Client.Transport
 {
     internal class HttpLongPollingTransport : IBayeuxTransport
     {
+        private readonly Policy _retyrPolicy;
         private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
         private readonly HttpClient _httpClient;
@@ -27,8 +29,11 @@ namespace Genesys.Bayeux.Client.Transport
         private readonly IList<IObserver<BayeuxMessage>> _observers;
         public IEnumerable<IExtension> Extensions { get; }
 
-        public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options, IEnumerable<IExtension> extensions)
+        public HttpLongPollingTransport(IOptions<HttpLongPollingTransportOptions> options,
+            IEnumerable<IExtension> extensions,
+            Policy retryPolicy)
         {
+            _retyrPolicy = retryPolicy;
             _httpClient = options.Value.HttpClient;
             _url = options.Value.Uri;
             _observers = new List<IObserver<BayeuxMessage>>();
@@ -52,24 +57,34 @@ namespace Genesys.Bayeux.Client.Transport
             }
             
             var messageStr = JsonConvert.SerializeObject(requestsToSend);
-            Log.Debug(() => $"Posting: {messageStr}");
-
-            var httpResponse = await _httpClient.PostAsync(_url, new StringContent(messageStr, Encoding.UTF8, "application/json"), cancellationToken).ConfigureAwait(false);
-
-            if (!httpResponse.IsSuccessStatusCode)
+            Log.Debug($"Posting: {messageStr}");
+            JObject response = null;
+            await _retyrPolicy.ExecuteAsync(async () =>
             {
-                var responseStr = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                Log.Debug(() => $"Received: {responseStr}");
-            }
+                var httpResponse = await _httpClient.PostAsync(_url,
+                        new StringContent(messageStr, Encoding.UTF8, "application/json"), cancellationToken)
+                    .ConfigureAwait(false);
 
-            httpResponse.EnsureSuccessStatusCode();
+                if (!httpResponse.IsSuccessStatusCode)
+                {
+                    var responseStr = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    Log.Debug(() => $"Received: {responseStr}");
+                }
 
-            var responseToken = JToken.ReadFrom(new JsonTextReader(new StreamReader(await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))));
-            Log.Debug(() => $"Received Response Token: {responseToken.ToString(Formatting.None)}");
-            
-            IEnumerable<JToken> tokens = responseToken is JArray ?
-                (IEnumerable<JToken>)responseToken :
-                new[] { responseToken };
+                httpResponse.EnsureSuccessStatusCode();
+
+                var responseToken = JToken.ReadFrom(new JsonTextReader(
+                    new StreamReader(await httpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false))));
+                Log.Debug(() => $"Received Response Token: {responseToken.ToString(Formatting.None)}");
+
+                response = ProcessResponse(responseToken);
+            }).ConfigureAwait(false);
+            return response;
+        }
+
+        private JObject ProcessResponse(JToken responseToken)
+        {
+            IEnumerable<JToken> tokens = responseToken is JArray ? (IEnumerable<JToken>) responseToken : new[] {responseToken};
             // https://docs.cometd.org/current/reference/#_delivery
             // Event messages MAY be sent to the client in the same HTTP response 
             // as any other message other than a /meta/handshake response.
@@ -79,7 +94,7 @@ namespace Genesys.Bayeux.Client.Transport
             foreach (var token in tokens)
             {
                 BayeuxMessage message = token.ToObject<BayeuxMessage>();
-                
+
                 var channel = message.ChannelId;
 
                 if (channel == null)
@@ -94,7 +109,6 @@ namespace Genesys.Bayeux.Client.Transport
                         events.Add(message);
                     }
                 }
-                    
             }
 
             var observable = events.ToObservable();

@@ -4,6 +4,7 @@ using System.Net.Http;
 using Genesys.Bayeux.Client.Extensions;
 using Genesys.Bayeux.Client.Transport;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace Genesys.Bayeux.Client.Options
 {
@@ -31,7 +32,7 @@ namespace Genesys.Bayeux.Client.Options
             {
                 HttpClient = HttpClient,
                 Uri = Uri
-            }), new List<IExtension>());
+            }), new List<IExtension>(), Policy.NoOp());
         }        
     }
 }
