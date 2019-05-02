@@ -79,7 +79,8 @@ namespace Genesys.Bayeux.Client.Messaging
                 TryGetValue(MessageFields.DataField, out var data);
                 if (!(data is string value))
                 {
-                    return (Dictionary<string, object>)data;
+                    var obj = JObject.FromObject(data);
+                    return obj.ToObject<Dictionary<string,object>>();
                 }
 
                 data = JsonConvert.DeserializeObject<Dictionary<string, object>>(value);

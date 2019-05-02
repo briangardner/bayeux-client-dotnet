@@ -68,7 +68,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
                     .Callback<object, CancellationToken>(
                         (obj, token) =>
                         {
-                            request = obj as JObject;
+                            request = JObject.FromObject(obj);
                         })
                     .ReturnsAsync(new JObject());
                 return mock;

@@ -1,4 +1,5 @@
 ﻿using System;
+using Genesys.Bayeux.Client.Logging;
 
 namespace Genesys.Bayeux.Client.Channels
 {
@@ -6,6 +7,7 @@ namespace Genesys.Bayeux.Client.Channels
         where TType:class
         where TPublisher:IUnsubscribe<TType>
     {
+        private readonly ILog _logger = LogProvider.GetCurrentClassLogger();
         private readonly IObserver<TType> _observer;
         private readonly TPublisher _publisher;
 
@@ -17,6 +19,7 @@ namespace Genesys.Bayeux.Client.Channels
 
         public void Dispose()
         {
+            _logger.Info("Unsubscribing {publisher} from {observer}", _publisher.GetType(), _observer.GetType());
             _publisher.UnsubscribeAsync(_observer).GetAwaiter().GetResult();
         }
     }

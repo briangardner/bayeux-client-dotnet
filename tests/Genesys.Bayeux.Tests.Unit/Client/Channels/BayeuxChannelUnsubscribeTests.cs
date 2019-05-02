@@ -22,8 +22,7 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
                     (object msg, CancellationToken token) =>
                     {
                         _unsubscribeMessage = (JObject)msg;
-                    })
-                .ReturnsAsync(new JObject());
+                    });
         }
         [Fact]
         public void Should_Not_Attempt_Unsubscribe_When_Subscribers_Still_Present()

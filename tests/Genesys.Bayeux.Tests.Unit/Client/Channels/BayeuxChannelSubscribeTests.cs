@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Genesys.Bayeux.Client;
 using Genesys.Bayeux.Client.Channels;
@@ -12,15 +13,12 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
     public class BayeuxChannelSubscribeTests
     {
         private readonly Mock<IBayeuxClientContext> _clientContextMock;
-        private JObject _subscribeMessage;
         private readonly ChannelId _channelId = new ChannelId("/dummy");
         public BayeuxChannelSubscribeTests()
         {
             _clientContextMock = new Mock<IBayeuxClientContext>();
             _clientContextMock.Setup(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new JObject())
-                .Callback(
-                    (JObject msg, CancellationToken token) => { _subscribeMessage = msg; });
+                .ReturnsAsync(new JObject());
         }
 
         [Fact]
@@ -40,20 +38,5 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Channels
             _clientContextMock.Verify(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        [Fact]
-        public void Subscribe_Message_Should_Have_Correct_Channel()
-        {
-            var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
-            channel.Subscribe(new Mock<IObserver<IMessage>>().Object);
-            Assert.Equal("/meta/subscribe", _subscribeMessage[MessageFields.ChannelField]);
-        }
-
-        [Fact]
-        public void Subscribe_Message_Should_Have_Correct_Subscription()
-        {
-            var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
-            channel.Subscribe(new Mock<IObserver<IMessage>>().Object);
-            Assert.Equal(_channelId.ToString(), _subscribeMessage[MessageFields.SubscriptionField]);
-        }
     }
 }

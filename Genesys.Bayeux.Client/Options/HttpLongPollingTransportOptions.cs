@@ -25,8 +25,8 @@ namespace Genesys.Bayeux.Client.Options
         {
             if (Uri == null)
                 throw new Exception("Please set Uri.");
-            if (HttpClient != null)
-                throw new Exception("Set HttpPost or HttpClient, but not both.");
+            if (HttpClient == null)
+                throw new Exception("Please Set HttpClient.");
 
             return new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(new HttpLongPollingTransportOptions()
             {

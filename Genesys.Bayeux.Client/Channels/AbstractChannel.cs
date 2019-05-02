@@ -34,13 +34,16 @@ namespace Genesys.Bayeux.Client.Channels
 
         public async Task SendSubscribe()
         {
+            _logger.Info("Sending subscribe request.");
             var message = GetSubscribeMessage();
-            await ClientContext.RequestMany(new BayeuxMessage[]{ message }, new CancellationToken()).ConfigureAwait(false);
+            await ClientContext.Request(message, new CancellationToken()).ConfigureAwait(false);
         }
 
         protected internal async Task SendUnSubscribe()
         {
-            await ClientContext.RequestMany(new BayeuxMessage[]{ GetUnsubscribeMessage() }, new CancellationToken()).ConfigureAwait(false);
+            _logger.Info("Sending unsubscribe request.");
+            var message = GetUnsubscribeMessage();
+            await ClientContext.Request(message, new CancellationToken()).ConfigureAwait(false);
         }
 
         public virtual BayeuxMessage GetSubscribeMessage()

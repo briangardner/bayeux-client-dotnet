@@ -3,7 +3,7 @@ using Genesys.Bayeux.Client.Messaging;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Genesys.Bayeux.Tests.Unit.Messaging
+namespace Genesys.Bayeux.Tests.Unit.Client.Messaging
 {
     public class MessageExtensionTests
     {
