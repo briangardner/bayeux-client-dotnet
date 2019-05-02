@@ -98,14 +98,14 @@ namespace Genesys.Bayeux.Tests.Unit.Client.Connectivity
             var content = new JArray { MetaResponse, ErrorEventResponse };
             var handler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             handler.Protected()
-                .Setup<Task<HttpResponseMessage>>("PostAsync", It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>())
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(content.ToString())
                 })
                 .Verifiable();
             var client = new HttpClient(handler.Object);
-            var transport = new HttpLongPollingTransport(GetOptions(client), new List<IExtension>(), Policy.NoOp());
+            var transport = new HttpLongPollingTransport(GetOptions(client), new List<IExtension>(), Policy.NoOpAsync());
             await Assert.ThrowsAsync<BayeuxProtocolException>(async () =>
                  await transport.Request(new List<BayeuxMessage>(), CancellationToken.None).ConfigureAwait(false)).ConfigureAwait(false);
         }

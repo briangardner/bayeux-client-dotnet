@@ -93,21 +93,28 @@ namespace Genesys.Bayeux.Client.Transport
 
             foreach (var token in tokens)
             {
-                BayeuxMessage message = token.ToObject<BayeuxMessage>();
+                var message = token.ToObject<BayeuxMessage>();
 
-                var channel = message.ChannelId;
-
-                if (channel == null)
-                    throw new BayeuxProtocolException("No 'channel' field in message.");
-
-                if (channel.IsMeta())
-                    responseObj = JObject.FromObject(message);
-                else
+                try
                 {
-                    if (this.ExtendReceive(message))
+                    var channel = message.ChannelId;
+
+                    if (channel == null)
+                        throw new BayeuxProtocolException("No 'channel' field in message.");
+
+                    if (channel.IsMeta())
+                        responseObj = JObject.FromObject(message);
+                    else
                     {
-                        events.Add(message);
+                        if (this.ExtendReceive(message))
+                        {
+                            events.Add(message);
+                        }
                     }
+                }
+                catch (ArgumentException)
+                {
+                    throw new BayeuxProtocolException("Invalid 'channel' in message");
                 }
             }
 
