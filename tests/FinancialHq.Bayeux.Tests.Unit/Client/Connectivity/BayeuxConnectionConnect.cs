@@ -14,7 +14,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Connectivity
     public class BayeuxConnectionConnect
     {
         private readonly string _clientId = Guid.NewGuid().ToString();
-        JObject _request = null;
+        private JObject _request;
         [Fact]
         public async Task Subscribe_Request_Should_Include_ClientId()
         {
@@ -23,7 +23,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Connectivity
             var connection = new BayeuxConnection(_clientId, context.Object);
 
             await connection.Connect(CancellationToken.None).ConfigureAwait(false);
-            Assert.Equal(_clientId.ToString(), _request[MessageFields.ClientIdField]);
+            Assert.Equal(_clientId, _request[MessageFields.ClientIdField]);
         }
 
         [Fact]

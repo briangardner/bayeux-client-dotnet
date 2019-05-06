@@ -1,4 +1,5 @@
-﻿namespace FinancialHq.Bayeux.Client.Messaging
+﻿// ReSharper disable UnusedMember.Global
+namespace FinancialHq.Bayeux.Client.Messaging
 {
     public static class MessageFields
     {

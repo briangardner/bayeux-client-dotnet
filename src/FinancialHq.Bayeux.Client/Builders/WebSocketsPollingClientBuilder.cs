@@ -5,6 +5,7 @@ namespace FinancialHq.Bayeux.Client.Builders
 {
     public interface IWebSocketsPollingClientBuilder
     {
+        // ReSharper disable once UnusedMember.Global
         IServiceCollection Services { get; }
     }
     public class WebSocketsPollingClientBuilder : IWebSocketsPollingClientBuilder

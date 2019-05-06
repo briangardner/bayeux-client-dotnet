@@ -7,7 +7,7 @@ namespace FinancialHq.Bayeux.Client.Messaging
 {
     public class BayeuxMessage : Dictionary<string, object>, IMessage
     {
-        public BayeuxMessage(): base()
+        public BayeuxMessage()
         {
             
         }
@@ -123,6 +123,7 @@ namespace FinancialHq.Bayeux.Client.Messaging
 
         public bool Meta => ChannelId.IsMeta(Channel);
         public bool Successful { get; set; }
+        // ReSharper disable once UnusedMember.Global
         public IDictionary<string, object> GetAdvice(bool create)
         {
             var advice = Advice;
@@ -136,6 +137,7 @@ namespace FinancialHq.Bayeux.Client.Messaging
             return advice;
         }
 
+        // ReSharper disable once UnusedMember.Global
         public IDictionary<string, object> GetDataAsDictionary(bool create)
         {
             var data = DataAsDictionary;

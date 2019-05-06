@@ -19,8 +19,9 @@ using Serilog.Events;
 
 namespace FinancialHQ.Bayeux.TestListener
 {
-    class Program
+    internal class Program
     {
+        // ReSharper disable once UnusedParameter.Local
         static async Task Main(string[] args)
         {
             var hostBuilder = new HostBuilder()

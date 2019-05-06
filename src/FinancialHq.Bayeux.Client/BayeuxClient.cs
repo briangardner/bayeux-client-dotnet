@@ -21,17 +21,7 @@ namespace FinancialHq.Bayeux.Client
         private readonly ConnectLoop _connectLoop;
 
 
-        /// <param name="eventTaskScheduler">
-        /// <para>
-        /// TaskScheduler for invoking events. Usually, you will be good by providing null. If you decide to 
-        /// your own TaskScheduler, please make sure that it guarantees ordered execution of events.
-        /// </para>
-        /// <para>
-        /// If null is provided, SynchronizationContext.Current will be used. This means that WPF and 
-        /// Windows Forms applications will run events appropriately. If SynchronizationContext.Current
-        /// is null, then a new TaskScheduler with ordered execution will be created.
-        /// </para>
-        /// </param>
+        /// <param name="context"></param>
         /// <param name="messageListeners">Collection of Listeners</param>
         /// <param name="subscriberCache"></param>
         /// <param name="delayOptions">
@@ -55,13 +45,15 @@ namespace FinancialHq.Bayeux.Client
 
         // TODO: add a new method to Start without failing when first connection has failed.
 
+        /// <inheritdoc />
         /// <summary>
         /// Does the Bayeux handshake, and starts long-polling.
         /// Handshake does not support re-negotiation; it fails at first unsuccessful response.
         /// </summary>
-        public Task Start(CancellationToken cancellationToken = default(CancellationToken)) =>
+        public Task Start(CancellationToken cancellationToken = default) =>
             _connectLoop.Start(cancellationToken);
 
+        /// <inheritdoc />
         /// <summary>
         /// Does the Bayeux handshake, and starts long-polling in the background with reconnects as needed.
         /// This method does not fail.
@@ -69,7 +61,7 @@ namespace FinancialHq.Bayeux.Client
         public void StartInBackground() =>
             _connectLoop.StartInBackground();
 
-        public async Task Stop(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task Stop(CancellationToken cancellationToken = default)
         {
             _connectLoop.Dispose();
             await _context.Disconnect(cancellationToken).ConfigureAwait(false);
@@ -121,20 +113,24 @@ namespace FinancialHq.Bayeux.Client
             return channel.Subscribe(listener);
         }
 
-        /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
-        public Task Subscribe(ChannelId channel, CancellationToken cancellationToken = default(CancellationToken)) =>
+        /// <inheritdoc />
+        /// <exception cref="T:System.InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
+        public Task Subscribe(ChannelId channel, CancellationToken cancellationToken = default) =>
             Subscribe(new[] { channel }, cancellationToken);
 
-        /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
-        public Task Unsubscribe(ChannelId channel, CancellationToken cancellationToken = default(CancellationToken)) =>
+        /// <inheritdoc />
+        /// <exception cref="T:System.InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
+        public Task Unsubscribe(ChannelId channel, CancellationToken cancellationToken = default) =>
             Unsubscribe(new[] { channel }, cancellationToken);
 
-        /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
-        public Task Subscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken = default(CancellationToken)) =>
+        /// <inheritdoc />
+        /// <exception cref="T:System.InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
+        public Task Subscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken = default) =>
             SubscribeImpl(channels, cancellationToken, throwIfNotConnected: true);
 
-        /// <exception cref="InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
-        public Task Unsubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken = default(CancellationToken)) =>
+        /// <inheritdoc />
+        /// <exception cref="T:System.InvalidOperationException">If the Bayeux connection is not currently connected.</exception>
+        public Task Unsubscribe(IEnumerable<ChannelId> channels, CancellationToken cancellationToken = default) =>
             UnsubscribeImpl(channels, cancellationToken, throwIfNotConnected: true);
 
         #endregion

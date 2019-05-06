@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using FinancialHq.Bayeux.Client;
-using FinancialHq.Bayeux.Client.Channels;
 using FinancialHq.Bayeux.Client.Messaging;
 using FinancialHq.Bayeux.Extensions.TimesyncClient;
-using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -17,7 +14,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
         {
             var message = TestMessageWithTimesync;
             var ext = new TimesyncClientExtension();
-            var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
             ext.ReceiveMeta( message);
             var sendMessage = TestMessageNoTimesync;
             ext.SendMeta(sendMessage);
@@ -32,7 +28,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
         {
             var message = TestMessageWithTimesync;
             var ext = new TimesyncClientExtension();
-            var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
             ext.ReceiveMeta(message);
             var sendMessage = TestMessageNoTimesync;
             ext.SendMeta( sendMessage);
@@ -47,7 +42,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
         {
             var message = TestMessageWithTimesync;
             var ext = new TimesyncClientExtension();
-            var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
             ext.ReceiveMeta( message);
             var sendMessage = TestMessageNoTimesync;
             ext.SendMeta( sendMessage);
@@ -61,7 +55,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
         {
             var message = TestMessageWithTimesync;
             var ext = new TimesyncClientExtension();
-            var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
             ext.ReceiveMeta( message);
             var sendMessage = TestMessageNoTimesync;
             var result = ext.SendMeta( sendMessage);
@@ -71,10 +64,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
         private static long Now => (DateTime.Now.Ticks - 621355968000000000) / 10000;
 
 
-        private readonly Mock<IBayeuxClientContext> MockClientContext = new Mock<IBayeuxClientContext>();
-
-
-        private BayeuxMessage TestMessageWithTimesync
+        private static BayeuxMessage TestMessageWithTimesync
         {
             get
             {
@@ -96,7 +86,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
             get
             {
                 var msg = new BayeuxMessage(new Dictionary<string, object>());
-                var messageExt = msg.GetExt(true);
                 return msg;
             }
         }

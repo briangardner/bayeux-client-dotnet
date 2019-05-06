@@ -42,7 +42,7 @@ namespace FinancialHq.Bayeux.Extensions.Ack
                 }
                 catch (Exception)
                 {
-                    _ackId = default(int);
+                    _ackId = default;
                 }
             }
             Log.Debug("Ack Extension - Receive Meta done");

@@ -2,7 +2,7 @@
 
 namespace FinancialHq.Bayeux.Client
 {
-    public static class IBayeuxClientContextExtensions
+    public static class BayeuxClientContextExtensions
     {
         public static AbstractChannel GetChannel(this IBayeuxClientContext client, string channelId)
         {

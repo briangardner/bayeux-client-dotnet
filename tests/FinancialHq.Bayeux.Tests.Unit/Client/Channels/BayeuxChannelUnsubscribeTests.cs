@@ -31,6 +31,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Channels
             var subscriber2 = new Mock<IObserver<IMessage>>().Object;
 
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
+            // ReSharper disable once UnusedVariable
             var unsubscriber1 = channel.Subscribe(subscriber1);
             var unsubscriber2 = channel.Subscribe(subscriber2);
             _clientContextMock.Reset();

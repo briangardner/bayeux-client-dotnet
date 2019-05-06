@@ -5,35 +5,35 @@ namespace FinancialHq.Bayeux.Client.Connectivity
 {
     internal class ReconnectDelays
     {
-        readonly IEnumerable<TimeSpan> delays;
+        private readonly IEnumerable<TimeSpan> _delays;
 
-        IEnumerator<TimeSpan> currentDelaysEnumerator;
-        TimeSpan currentDelay;
-        bool lastSucceeded = true;
+        private IEnumerator<TimeSpan> _currentDelaysEnumerator;
+        private TimeSpan _currentDelay;
+        private bool _lastSucceeded = true;
 
 
         public ReconnectDelays(IEnumerable<TimeSpan> delays)
         {
-            this.delays = delays ??
+            _delays = delays ??
                           new List<TimeSpan> { TimeSpan.Zero, TimeSpan.FromSeconds(5) };
         }
 
         public void ResetIfLastSucceeded()
         {
-            if (lastSucceeded)
-                currentDelaysEnumerator = delays.GetEnumerator();
+            if (_lastSucceeded)
+                _currentDelaysEnumerator = _delays.GetEnumerator();
 
-            lastSucceeded = true;
+            _lastSucceeded = true;
         }
 
         public TimeSpan GetNext()
         {
-            lastSucceeded = false;
+            _lastSucceeded = false;
 
-            if (currentDelaysEnumerator.MoveNext())
-                currentDelay = currentDelaysEnumerator.Current;
+            if (_currentDelaysEnumerator.MoveNext())
+                _currentDelay = _currentDelaysEnumerator.Current;
 
-            return currentDelay;
+            return _currentDelay;
         }
     }
 }

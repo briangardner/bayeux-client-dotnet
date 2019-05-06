@@ -16,6 +16,7 @@ namespace FinancialHq.Bayeux.Extensions.ReplayId.Extensions
             return 0;
         }
 
+        // ReSharper disable once UnusedMember.Global
         public static void SetReplayId(this BayeuxMessage message, long replayId)
         {
             message[MessageFields.ReplayIdField] = replayId;

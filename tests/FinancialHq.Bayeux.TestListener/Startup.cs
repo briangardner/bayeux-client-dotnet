@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FinancialHq.Bayeux.Client;
 using FinancialHq.Bayeux.Client.Channels;
 using FinancialHq.Bayeux.Extensions.ReplayId.Extensions;
+using FinancialHq.Bayeux.TestListener.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,20 +13,18 @@ namespace FinancialHQ.Bayeux.TestListener
 {
     class Startup : IHostedService
     {
-        private ILogger<Startup> _logger;
-        private IApplicationLifetime _appLifetime;
+        private readonly ILog _logger = LogProvider.GetCurrentClassLogger();
         private readonly IServiceProvider _serviceProvider;
         private readonly IBayeuxClient _client;
 
-        public Startup(ILogger<Startup> logger, IApplicationLifetime appLifetime, IServiceProvider serviceProvider)
+        public Startup(IServiceProvider serviceProvider)
         {
-            _logger = logger;
-            _appLifetime = appLifetime;
             _serviceProvider = serviceProvider;
             _client = _serviceProvider.GetService<IBayeuxClient>();
         }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            _logger.Info("StartAsync called");
             await _client.Start(cancellationToken).ConfigureAwait(false);
             //_client.Subscribe<Listener.TestListener>(new ChannelId("/topic/OpportunityAccountTypes"), CancellationToken.None, true);
             _client.Subscribe<Listener.TestListener>(_serviceProvider, new ChannelId("/topic/OpportunityAccountTypes2"), -2,
@@ -37,6 +36,7 @@ namespace FinancialHQ.Bayeux.TestListener
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
+            _logger.Info("StopAsync called");
             await _client.Stop(cancellationToken).ConfigureAwait(false);
         }
     }

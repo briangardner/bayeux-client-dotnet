@@ -9,14 +9,14 @@ namespace FinancialHq.Bayeux.Client.Connectivity
     public class BayeuxConnection
     {
         public readonly string ClientId;
-        private readonly IBayeuxClientContext context;
+        private readonly IBayeuxClientContext _context;
 
         public BayeuxConnection(
             string clientId,
             IBayeuxClientContext context)
         {
             ClientId = clientId;
-            this.context = context;
+            _context = context;
         }
         
         public async Task<JObject> Connect(CancellationToken cancellationToken)
@@ -25,10 +25,10 @@ namespace FinancialHq.Bayeux.Client.Connectivity
             {
                 {MessageFields.ClientIdField, ClientId }, {MessageFields.ChannelField, "/meta/connect"}, { MessageFields.ConnectionTypeField, "long-polling"}
             };
-            var response = await context.Request(request,
+            var response = await _context.Request(request,
                 cancellationToken).ConfigureAwait(false);
 
-            await context.SetConnectionState(ConnectionState.Connected).ConfigureAwait(false);
+            await _context.SetConnectionState(ConnectionState.Connected).ConfigureAwait(false);
 
             return response;
         }
@@ -39,7 +39,7 @@ namespace FinancialHq.Bayeux.Client.Connectivity
             {
                 {MessageFields.ClientIdField, ClientId }, {MessageFields.ChannelField, "/meta/disconnect"}
             };
-            return context.Request(
+            return _context.Request(
                 request,
                 cancellationToken);
         }

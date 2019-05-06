@@ -18,12 +18,12 @@ namespace FinancialHq.Bayeux.Client
 {
     class BayeuxClientContext : IBayeuxClientContext, IDisposable
     {
-        internal static ILog log = LogProvider.GetCurrentClassLogger();
+        internal static ILog Log = LogProvider.GetCurrentClassLogger();
 
         private readonly IBayeuxTransport _transport;
         private readonly TaskScheduler _eventTaskScheduler;
-        protected volatile int currentConnectionState = -1;
-        volatile BayeuxConnection _currentConnection;
+        protected volatile int CurrentConnectionState = -1;
+        private volatile BayeuxConnection _currentConnection;
 
         public ConcurrentDictionary<string, AbstractChannel> Channels { get; } = new ConcurrentDictionary<string, AbstractChannel>();
         public IEnumerable<IExtension> Extensions { get; }
@@ -64,7 +64,7 @@ namespace FinancialHq.Bayeux.Client
 
         public bool IsConnected()
         {
-            return currentConnectionState == (int) ConnectionState.Connected;
+            return CurrentConnectionState == (int) ConnectionState.Connected;
         }
 
         async Task RunInEventTaskScheduler(Action action) =>
@@ -85,9 +85,9 @@ namespace FinancialHq.Bayeux.Client
             {
                 AddClientId(request);
             }
-            log.Debug("Sending Request: {$enumerable}", enumerable);
+            Log.Debug("Sending Request: {$enumerable}", enumerable);
             var responseObj = await _transport.Request(enumerable, cancellationToken).ConfigureAwait(false);
-            log.Debug("Received Response: {$responseObj}", responseObj);
+            Log.Debug("Received Response: {$responseObj}", responseObj);
             var response = responseObj.ToObject<BayeuxResponse>();
 
             if (!response.successful)
@@ -98,8 +98,8 @@ namespace FinancialHq.Bayeux.Client
 
         protected internal virtual async Task  OnConnectionStateChangedAsync(ConnectionState state)
         {
-            log.Info("Changing ConnectionState from {current} to {newState}",  (ConnectionState)currentConnectionState, state);
-            var oldConnectionState = Interlocked.Exchange(ref currentConnectionState, (int)state);
+            Log.Info("Changing ConnectionState from {current} to {newState}",  (ConnectionState)CurrentConnectionState, state);
+            var oldConnectionState = Interlocked.Exchange(ref CurrentConnectionState, (int)state);
 
             if (oldConnectionState != (int)state)
                 await RunInEventTaskScheduler(() =>
@@ -113,12 +113,12 @@ namespace FinancialHq.Bayeux.Client
 
             if (SynchronizationContext.Current != null)
             {
-                log.Info($"Using current SynchronizationContext for events: {SynchronizationContext.Current}");
+                Log.Info($"Using current SynchronizationContext for events: {SynchronizationContext.Current}");
                 return TaskScheduler.FromCurrentSynchronizationContext();
             }
             else
             {
-                log.Info("Using a new TaskScheduler with ordered execution for events.");
+                Log.Info("Using a new TaskScheduler with ordered execution for events.");
                 return new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler;
             }
         }
@@ -137,7 +137,7 @@ namespace FinancialHq.Bayeux.Client
 
         private void AddClientId(BayeuxMessage message)
         {
-            if (!message.ContainsKey("clientId") &&  currentConnectionState == (int)ConnectionState.Connected)
+            if (!message.ContainsKey("clientId") &&  CurrentConnectionState == (int)ConnectionState.Connected)
             {
                 message["clientId"] = _currentConnection.ClientId;
             }

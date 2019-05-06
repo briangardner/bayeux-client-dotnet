@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using FinancialHq.Bayeux.Client;
+﻿using FinancialHq.Bayeux.Client;
 using FinancialHq.Bayeux.Client.Channels;
 using Moq;
 using Xunit;

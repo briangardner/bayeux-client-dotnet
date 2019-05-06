@@ -13,7 +13,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Connectivity
     public class BayeuxConnectionDisconnect
     {
         private readonly string _clientId = Guid.NewGuid().ToString();
-        JObject request = null;
+        private JObject _request;
         [Fact]
         public async Task Subscribe_Request_Should_Include_ClientId()
         {
@@ -22,7 +22,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Connectivity
             var connection = new BayeuxConnection(_clientId, context.Object);
 
             await connection.Disconnect(CancellationToken.None).ConfigureAwait(false);
-            Assert.Equal(_clientId.ToString(), request["clientId"]);
+            Assert.Equal(_clientId, _request["clientId"]);
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Connectivity
             var connection = new BayeuxConnection(_clientId, context.Object);
 
             await connection.Disconnect(CancellationToken.None).ConfigureAwait(false);
-            Assert.Equal("/meta/disconnect", request["channel"]);
+            Assert.Equal("/meta/disconnect", _request["channel"]);
         }
 
 
@@ -46,7 +46,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Connectivity
                     .Callback<object, CancellationToken>(
                         (obj, token) =>
                         {
-                            request = JObject.FromObject(obj);
+                            _request = JObject.FromObject(obj);
                         })
                     .ReturnsAsync(new JObject());
                 return mock;

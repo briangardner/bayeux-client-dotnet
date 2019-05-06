@@ -9,7 +9,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Channels
         [Fact]
         public void Should_Throw_Exception_When_Name_Null()
         {
-            Assert.Throws<ArgumentException>(() => new ChannelId(null as string));
+            Assert.Throws<ArgumentException>(() => new ChannelId(null));
         }
 
         [Fact]

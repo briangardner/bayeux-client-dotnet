@@ -6,8 +6,8 @@ namespace FinancialHq.Bayeux.Client.Channels
 {
     public class ChannelId
     {
-        public const string WILD = "*";
-        public const string DEEPWILD = "**";
+        public const string Wild = "*";
+        public const string Deepwild = "**";
 
         private readonly string _name;
         private readonly string[] _segments;
@@ -60,10 +60,10 @@ namespace FinancialHq.Bayeux.Client.Channels
             }
             else switch (_segments[_segments.Length - 1])
             {
-                case WILD:
+                case Wild:
                     _wild = 1;
                     break;
-                case DEEPWILD:
+                case Deepwild:
                     _wild = 2;
                     break;
                 default:
@@ -76,9 +76,9 @@ namespace FinancialHq.Bayeux.Client.Channels
 
         public IList<string> Wilds { get; }
 
-        public bool Wild => _wild > 0;
+        public bool IsWild => _wild > 0;
 
-        public bool DeepWild => _wild > 1;
+        public bool IsDeepWild => _wild > 1;
 
         public bool IsMeta()
         {
@@ -139,7 +139,7 @@ namespace FinancialHq.Bayeux.Client.Channels
         /// </returns>
         public bool Matches(ChannelId name)
         {
-            if (name.Wild)
+            if (name.IsWild)
             {
                 return Equals(name);
             }
@@ -205,7 +205,7 @@ namespace FinancialHq.Bayeux.Client.Channels
         /* ------------------------------------------------------------ */
         public bool IsAncestorOf(ChannelId id)
         {
-            if (Wild || Depth() >= id.Depth())
+            if (IsWild || Depth() >= id.Depth())
             {
                 return false;
             }
@@ -223,7 +223,7 @@ namespace FinancialHq.Bayeux.Client.Channels
         /* ------------------------------------------------------------ */
         public bool IsParentOf(ChannelId id)
         {
-            if (Wild || Depth() != id.Depth() - 1)
+            if (IsWild || Depth() != id.Depth() - 1)
             {
                 return false;
             }

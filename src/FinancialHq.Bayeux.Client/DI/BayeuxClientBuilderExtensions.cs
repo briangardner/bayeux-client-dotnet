@@ -11,7 +11,7 @@ namespace FinancialHq.Bayeux.Client.DI
 {
     public static class BayeuxClientBuilderExtensions
     {
-        internal static ILog logger = LogProvider.GetCurrentClassLogger();
+        internal static ILog Logger = LogProvider.GetCurrentClassLogger();
         public static IHttpLongPollingClientBuilder UseHttpLongPolling(this IBayeuxClientBuilder builder,
             HttpLongPollingTransportOptions httpLongPollingTransportOptions,
             Action<ReconnectDelayOptions> reconnectDelayOptions = null,
@@ -34,7 +34,7 @@ namespace FinancialHq.Bayeux.Client.DI
                         return TimeSpan.FromSeconds(wait);
                     }, (exception, timeSpan, context) =>
                     {
-                        logger.WarnException("Retrying Http call. Waiting {wait} seconds.",exception, timeSpan.Seconds);
+                        Logger.WarnException("Retrying Http call. Waiting {wait} seconds.",exception, timeSpan.Seconds);
                     });
                 builder.Services.AddTransient<Policy>((provider) => retryPolicy);
             }

@@ -18,19 +18,19 @@ namespace FinancialHq.Bayeux.Client.Transport
 {
     internal class WebSocketTransport : IBayeuxTransport
     {
-        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
         private readonly Func<WebSocket> _webSocketFactory;
         private readonly Uri _uri;
         private readonly TimeSpan _responseTimeout;
         private readonly Func<IEnumerable<JObject>, Task> _eventPublisher;
 
-        WebSocket webSocket;
-        Task receiverLoopTask;
-        CancellationTokenSource receiverLoopCancel;
+        private WebSocket _webSocket;
+        private Task _receiverLoopTask;
+        private CancellationTokenSource _receiverLoopCancel;
 
         private readonly ConcurrentDictionary<string, TaskCompletionSource<JObject>> _pendingRequests = new ConcurrentDictionary<string, TaskCompletionSource<JObject>>();
-        private long _nextMessageId = 0;
+        private long _nextMessageId;
 
         public WebSocketTransport(Func<WebSocket> webSocketFactory, Uri uri, TimeSpan responseTimeout, Func<IEnumerable<JObject>, Task> eventPublisher, IEnumerable<IExtension> extensions, IList<IObserver<JObject>> observers)
         {
@@ -46,20 +46,20 @@ namespace FinancialHq.Bayeux.Client.Transport
         {
             ClearPendingRequests();
 
-            receiverLoopCancel?.Cancel();
+            _receiverLoopCancel?.Cancel();
 
-            if (webSocket != null)
+            if (_webSocket != null)
             {
                 try
                 {
-                    _ = webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    _ = _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
                 }
                 catch (Exception)
                 {
                     // Nothing else to try.
                 }
 
-                webSocket.Dispose();
+                _webSocket.Dispose();
             }
         }
 
@@ -69,27 +69,27 @@ namespace FinancialHq.Bayeux.Client.Transport
 
         public async Task Open(CancellationToken cancellationToken)
         {
-            if (receiverLoopCancel != null)
+            if (_receiverLoopCancel != null)
             {
-                receiverLoopCancel.Cancel();
-                await receiverLoopTask.ConfigureAwait(false);
+                _receiverLoopCancel.Cancel();
+                await _receiverLoopTask.ConfigureAwait(false);
             }
 
-            webSocket?.Dispose();
+            _webSocket?.Dispose();
 
-            webSocket = _webSocketFactory();
+            _webSocket = _webSocketFactory();
 
             try
             {
-                await webSocket.ConnectAsync(_uri, cancellationToken).ConfigureAwait(false);
+                await _webSocket.ConnectAsync(_uri, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 throw new BayeuxTransportException("WebSocket connect failed.", e, transportClosed: true);
             }
 
-            receiverLoopCancel = new CancellationTokenSource();
-            receiverLoopTask = StartReceiverLoop(receiverLoopCancel.Token);
+            _receiverLoopCancel = new CancellationTokenSource();
+            _receiverLoopTask = StartReceiverLoop(_receiverLoopCancel.Token);
         }
 
         public async Task StartReceiverLoop(CancellationToken cancelToken)
@@ -138,14 +138,14 @@ namespace FinancialHq.Bayeux.Client.Transport
             _pendingRequests.Clear();
         }
 
-        async Task<Stream> ReceiveMessage(CancellationToken cancellationToken)
+        private async Task<Stream> ReceiveMessage(CancellationToken cancellationToken)
         {
             var buffer = new ArraySegment<byte>(new byte[8192]);
             var stream = new MemoryStream();
-            WebSocketReceiveResult result = null;
+            WebSocketReceiveResult result;
             do
             {
-                result = await webSocket.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
+                result = await _webSocket.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
                 stream.Write(buffer.Array, buffer.Offset, result.Count);
             }
             while (!result.EndOfMessage);
@@ -233,7 +233,7 @@ namespace FinancialHq.Bayeux.Client.Transport
             var bytes = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
             try
             {
-                await webSocket.SendAsync(
+                await _webSocket.SendAsync(
                     bytes,
                     WebSocketMessageType.Text,
                     endOfMessage: true,
@@ -241,7 +241,7 @@ namespace FinancialHq.Bayeux.Client.Transport
             }
             catch (Exception e)
             {
-                throw new BayeuxTransportException("WebSocket send failed.", e, transportClosed: webSocket.State != WebSocketState.Open);
+                throw new BayeuxTransportException("WebSocket send failed.", e, transportClosed: _webSocket.State != WebSocketState.Open);
             }
         }
 

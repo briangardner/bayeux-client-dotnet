@@ -34,17 +34,6 @@ namespace FinancialHq.Bayeux.Tests.Unit
                 successful = true,
             };
 
-        public static readonly object SuccessfulHandshakeResponseNoAdvice =
-            new
-            {
-                minimumVersion = "1.0",
-                clientId = "nv8g1psdzxpb9yol3z1l6zvk2p",
-                supportedConnectionTypes = new[] { "long-polling", "callback-polling" },
-                channel = "/meta/handshake",
-                version = "1.0",
-                successful = true,
-            };
-
         public static readonly object SuccessfulConnectResponse =
             new
             {

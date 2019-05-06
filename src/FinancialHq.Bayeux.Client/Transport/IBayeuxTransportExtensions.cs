@@ -3,7 +3,7 @@ using FinancialHq.Bayeux.Client.Messaging;
 
 namespace FinancialHq.Bayeux.Client.Transport
 {
-    internal static class IBayeuxTransportExtensions
+    internal static class BayeuxTransportExtensions
     {
         internal static bool ExtendReceive(this IBayeuxTransport transport, BayeuxMessage message)
         {

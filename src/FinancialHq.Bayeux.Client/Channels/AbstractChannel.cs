@@ -10,6 +10,7 @@ namespace FinancialHq.Bayeux.Client.Channels
 {
     public interface IChannel : ISubject<BayeuxMessage>
     {
+        // ReSharper disable once UnusedMember.Global
         ChannelId ChannelId { get; }
 
     }
@@ -74,12 +75,6 @@ namespace FinancialHq.Bayeux.Client.Channels
             }
 
             return new Unsubscriber<AbstractChannel, BayeuxMessage>(this, observer);
-        }
-
-        public async Task UnsubscribeAll()
-        {
-            Observers.Clear();
-            await SendUnSubscribe().ConfigureAwait(false);
         }
 
         public void OnCompleted()

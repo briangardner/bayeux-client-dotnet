@@ -114,12 +114,12 @@ namespace FinancialHq.Bayeux.Client.Connectivity
                     if (_transportClosed)
                     {
                         _transportClosed = false;
-                        Log.Info($"Re-opening transport due to previously failed request.");
+                        Log.Info("Re-opening transport due to previously failed request.");
                         await _context.Disconnect(_pollCancel.Token).ConfigureAwait(false);
                         await _context.Open(_pollCancel.Token).ConfigureAwait(false);
                     }
 
-                    Log.Info($"Re-handshaking due to previously failed request.");
+                    Log.Info("Re-handshaking due to previously failed request.");
                     await Handshake(_pollCancel.Token).ConfigureAwait(false);
                 }
                 else switch (_lastAdvice.reconnect)
@@ -143,7 +143,6 @@ namespace FinancialHq.Bayeux.Client.Connectivity
                             await Handshake(_pollCancel.Token).ConfigureAwait(false);
                             break;
 
-                        case MessageFields.ReconnectRetryValue:
                         default:
                             if (_lastAdvice.interval > 0)
                                 Log.Info($"Re-connecting after {_lastAdvice.interval} ms on server request.");

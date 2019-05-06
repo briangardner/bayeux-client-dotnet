@@ -42,10 +42,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.DI
                 var handler = new Mock<HttpMessageHandler>();
                 handler.Protected()
                     .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                    .Returns(Task<HttpResponseMessage>.Factory.StartNew(() =>
-                    {
-                        return new HttpResponseMessage(HttpStatusCode.OK);
-                    }))
+                    .Returns(Task<HttpResponseMessage>.Factory.StartNew(() => new HttpResponseMessage(HttpStatusCode.OK)))
                     .Callback<HttpRequestMessage, CancellationToken>((r, c) =>
                     {
                     });

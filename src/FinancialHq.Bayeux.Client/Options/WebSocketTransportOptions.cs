@@ -18,10 +18,11 @@ namespace FinancialHq.Bayeux.Client.Options
         /// </summary>
         public TimeSpan? ResponseTimeout { get; set; }
         
+        // ReSharper disable once UnusedMember.Global
         internal WebSocketTransport Build(Func<IEnumerable<JObject>,Task> eventPublisher, IEnumerable<IExtension> extensions = null)
         {
             return new WebSocketTransport(
-                WebSocketFactory ?? (() => SystemClientWebSocket.CreateClientWebSocket()),
+                WebSocketFactory ?? (SystemClientWebSocket.CreateClientWebSocket),
                 Uri ?? throw new Exception("Please set Uri."),
                 ResponseTimeout ?? TimeSpan.FromSeconds(65),
                 eventPublisher, extensions, new List<IObserver<JObject>>());

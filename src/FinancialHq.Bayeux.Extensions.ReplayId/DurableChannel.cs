@@ -21,7 +21,7 @@ namespace FinancialHq.Bayeux.Extensions.ReplayId
 
             _cache = cache;
 
-            this.Observers = channel.Observers;
+            Observers = channel.Observers;
             ReplayId = replayId;
         }
 

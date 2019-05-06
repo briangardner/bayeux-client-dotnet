@@ -7,6 +7,7 @@ namespace FinancialHq.Bayeux.Client.Exceptions
     {
         public bool TransportClosed { get; }
 
+        // ReSharper disable once UnusedParameter.Local
         public BayeuxTransportException(string message, Exception innerException, bool transportClosed)
             : base(innerException.Message, innerException)
         {

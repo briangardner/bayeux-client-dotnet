@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using FinancialHq.Bayeux.Client;
-using FinancialHq.Bayeux.Client.Channels;
 using FinancialHq.Bayeux.Client.Messaging;
 using FinancialHq.Bayeux.Extensions.TimesyncClient;
-using Moq;
 using Xunit;
 
 namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
@@ -16,7 +13,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
         {
             var message = new BayeuxMessage(new Dictionary<string, object>());
             var ext = new TimesyncClientExtension();
-            var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
             var result = ext.ReceiveMeta( message);
             Assert.True(result);
         }
@@ -34,8 +30,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
 
             };
             var ext = new TimesyncClientExtension();
-            var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
-            var result = ext.ReceiveMeta( message);
+            ext.ReceiveMeta( message);
             Assert.NotEqual(0, ext.Offset);
         }
 
@@ -52,7 +47,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
 
             };
             var ext = new TimesyncClientExtension();
-            var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
             var result = ext.ReceiveMeta( message);
             Assert.NotEqual(0, ext.Lag);
         }
@@ -70,7 +64,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
 
             };
             var ext = new TimesyncClientExtension();
-            var channel = new BayeuxChannel(MockClientContext.Object, new ChannelId("/test"));
             var result = ext.ReceiveMeta( message);
             Assert.True(result);
         }
@@ -78,7 +71,6 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
         private static long Now => (DateTime.Now.Ticks - 621355968000000000) / 10000;
 
 
-        private readonly Mock<IBayeuxClientContext> MockClientContext = new Mock<IBayeuxClientContext>();
 
 
     }
