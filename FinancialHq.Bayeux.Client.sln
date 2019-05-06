@@ -1,0 +1,72 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28315.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHQ.Bayeux.Client", "src\FinancialHq.Bayeux.Client\FinancialHq.Bayeux.Client.csproj", "{0DCEC1E8-CBE2-4F85-A989-FA1A363C04A8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5A1A53E1-A046-4AA3-9856-C8548A932FFA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Extensions.ReplayId", "src\FinancialHq.Bayeux.Extensions.ReplayId\FinancialHq.Bayeux.Extensions.ReplayId.csproj", "{B90B7830-7E2B-42C9-A41E-1280C820EEAB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1FBAF849-5139-447D-822C-19B7C9281215}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Tests.Unit", "tests\FinancialHq.Bayeux.Tests.Unit\FinancialHq.Bayeux.Tests.Unit.csproj", "{A74E3F97-DB47-4095-B270-267E5754B9A1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Extensions.Ack", "src\FinancialHq.Bayeux.Extensions.Ack\FinancialHq.Bayeux.Extensions.Ack.csproj", "{EA8FEF8E-2638-4E4B-A8DF-9963BC5D33DF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Extensions.Error", "src\FinancialHq.Bayeux.Extensions.Error\FinancialHq.Bayeux.Extensions.Error.csproj", "{1A888B47-400A-4DD4-894D-886F0E08E9C5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Extensions.TimesyncClient", "src\FinancialHq.Bayeux.Extensions.TimesyncClient\FinancialHq.Bayeux.Extensions.TimesyncClient.csproj", "{62BC821F-50DF-43F4-8321-35E9ADDD3B10}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.TestListener", "tests\FinancialHq.Bayeux.TestListener\FinancialHq.Bayeux.TestListener.csproj", "{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0DCEC1E8-CBE2-4F85-A989-FA1A363C04A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DCEC1E8-CBE2-4F85-A989-FA1A363C04A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DCEC1E8-CBE2-4F85-A989-FA1A363C04A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DCEC1E8-CBE2-4F85-A989-FA1A363C04A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B90B7830-7E2B-42C9-A41E-1280C820EEAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B90B7830-7E2B-42C9-A41E-1280C820EEAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B90B7830-7E2B-42C9-A41E-1280C820EEAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B90B7830-7E2B-42C9-A41E-1280C820EEAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A74E3F97-DB47-4095-B270-267E5754B9A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A74E3F97-DB47-4095-B270-267E5754B9A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A74E3F97-DB47-4095-B270-267E5754B9A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A74E3F97-DB47-4095-B270-267E5754B9A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA8FEF8E-2638-4E4B-A8DF-9963BC5D33DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA8FEF8E-2638-4E4B-A8DF-9963BC5D33DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA8FEF8E-2638-4E4B-A8DF-9963BC5D33DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA8FEF8E-2638-4E4B-A8DF-9963BC5D33DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A888B47-400A-4DD4-894D-886F0E08E9C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A888B47-400A-4DD4-894D-886F0E08E9C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A888B47-400A-4DD4-894D-886F0E08E9C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A888B47-400A-4DD4-894D-886F0E08E9C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62BC821F-50DF-43F4-8321-35E9ADDD3B10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62BC821F-50DF-43F4-8321-35E9ADDD3B10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62BC821F-50DF-43F4-8321-35E9ADDD3B10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62BC821F-50DF-43F4-8321-35E9ADDD3B10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A74E3F97-DB47-4095-B270-267E5754B9A1} = {1FBAF849-5139-447D-822C-19B7C9281215}
+		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F} = {1FBAF849-5139-447D-822C-19B7C9281215}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CF3E3EC5-0BF9-4D3B-9A22-0FF6C752C92A}
+	EndGlobalSection
+	GlobalSection(NDepend) = preSolution
+		Project = ".\Genesys.Bayeux.Client.ndproj"
+	EndGlobalSection
+EndGlobal
