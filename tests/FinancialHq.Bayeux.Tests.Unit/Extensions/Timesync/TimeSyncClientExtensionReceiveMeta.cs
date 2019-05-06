@@ -47,7 +47,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Extensions.Timesync
 
             };
             var ext = new TimesyncClientExtension();
-            var result = ext.ReceiveMeta( message);
+            ext.ReceiveMeta( message);
             Assert.NotEqual(0, ext.Lag);
         }
 

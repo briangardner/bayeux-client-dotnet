@@ -7,7 +7,6 @@ using FinancialHq.Bayeux.Extensions.ReplayId.Extensions;
 using FinancialHq.Bayeux.TestListener.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace FinancialHQ.Bayeux.TestListener
 {

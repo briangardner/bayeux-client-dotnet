@@ -146,7 +146,7 @@ namespace FinancialHq.Bayeux.Client.Transport
             do
             {
                 result = await _webSocket.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
-                stream.Write(buffer.Array, buffer.Offset, result.Count);
+                stream.Write(buffer.Array ?? throw new InvalidOperationException("Buffer array null"), buffer.Offset, result.Count);
             }
             while (!result.EndOfMessage);
 
