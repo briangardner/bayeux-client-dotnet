@@ -1,0 +1,57 @@
+pool:
+  name: Usaf-Pool
+variables:
+  BuildConfiguration: 'release'
+
+steps:
+- task: DotNetCoreInstaller@0
+  displayName: 'Use .NET Core sdk 2.2.105'
+  inputs:
+    version: 2.2.105
+
+- task: NuGetToolInstaller@1
+  displayName: 'Use NuGet 4.9.4'
+  inputs:
+    versionSpec: 4.9.4
+
+- script: 'dotnet test --configuration $(BuildConfiguration) --logger trx;LogFileName=$(Common.TestResultsDirectory)\TestResults-Unit.trx;RunTitle="FinancialHq Bayeux Client Tests"'
+  workingDirectory: tests/FinancialHq.Bayeux.Tests.Unit
+  displayName: 'Run Unit Tests'
+
+- task: PublishTestResults@2
+  displayName: 'Publish Test Results **\TestResults-*.trx'
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '**\TestResults-*.trx'
+    searchFolder: '$(Common.TestResultsDirectory)'
+
+- script: 'dotnet pack --output "$(Build.ArtifactStagingDirectory)" --configuration $(BuildConfiguration) --version-suffix "CI-$(Build.BuildNumber)"'
+  workingDirectory: src/FinancialHq.Bayeux.Client
+  displayName: 'NuGet Package Pre-release'
+
+- script: 'dotnet pack --output "$(Build.ArtifactStagingDirectory)" --configuration $(BuildConfiguration) --version-suffix "CI-$(Build.BuildNumber)"'
+  workingDirectory: src/FinancialHq.Bayeux.Extensions.Ack
+  displayName: 'NuGet Package Pre-release'
+
+- script: 'dotnet pack --output "$(Build.ArtifactStagingDirectory)" --configuration $(BuildConfiguration) --version-suffix "CI-$(Build.BuildNumber)"'
+  workingDirectory: src/FinancialHq.Bayeux.Extensions.Error
+  displayName: 'NuGet Package Pre-release'
+
+- script: 'dotnet pack --output "$(Build.ArtifactStagingDirectory)" --configuration $(BuildConfiguration) --version-suffix "CI-$(Build.BuildNumber)"'
+  workingDirectory: src/FinancialHq.Bayeux.Extensions.ReplayId
+  displayName: 'NuGet Package Pre-release'
+
+- script: 'dotnet pack --output "$(Build.ArtifactStagingDirectory)" --configuration $(BuildConfiguration) --version-suffix "CI-$(Build.BuildNumber)"'
+  workingDirectory: src/FinancialHq.Bayeux.Extensions.TimesyncClient
+  displayName: 'NuGet Package Pre-release'
+
+- script: 'dotnet pack --output "$(Build.ArtifactStagingDirectory)" --configuration $(BuildConfiguration) --version-suffix "CI-$(Build.BuildNumber)"'
+  workingDirectory: src/FinancialHq.Bayeux.Salesforce
+  displayName: 'NuGet Package Pre-release'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    publishVstsFeed: '0d078d82-264c-4e92-8d0c-b0a2550601b8'
+

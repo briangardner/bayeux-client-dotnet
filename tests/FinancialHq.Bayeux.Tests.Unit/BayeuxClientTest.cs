@@ -98,8 +98,14 @@ namespace FinancialHq.Bayeux.Tests.Unit
                   Task.Delay(TimeSpan.FromSeconds(5))
                       .ContinueWith(t => TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulHandshakeResponse)))
                 ;
+            var transport = new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(new HttpLongPollingTransportOptions()
+            {
+                HttpClient = new HttpClient(mock.Object),
+                Uri = Url
+            }), new List<IExtension>(),
+                Policy.NoOpAsync());
             var bayeuxClient = new BayeuxClient(
-                new BayeuxClientContext(new HttpLongPollingTransportOptions { HttpClient = new HttpClient(mock.Object), Uri = Url }.Build(), new List<IExtension>()),
+                new BayeuxClientContext(transport, new List<IExtension>()),
                 new List<IMessageListener>(),
                 new Mock<ISubscriberCache>().Object,
                 new ReconnectDelayOptions(new List<TimeSpan>(){ TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2) }));
@@ -140,49 +146,6 @@ namespace FinancialHq.Bayeux.Tests.Unit
 
         // TODO: test ConnectionStateChangedEvents
 
-        [Fact]
-        public async Task Automatic_subscription()
-        {
-            var mock = new Mock<HttpMessageHandler>();
-            var mockProtected = mock.Protected().As<IHttpMessageHandlerProtected>();
-
-            int subscriptionCount = 0;
-
-            mockProtected
-                .Setup(h => h.SendAsync(TestMessages.MatchSubscriptionRequest(), It.IsAny<CancellationToken>()))
-                .Returns(() =>
-                    Task.Run(() => subscriptionCount++)
-                        .ContinueWith(t => TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulSubscriptionResponse)));
-
-            mockProtected
-                .Setup(h => h.SendAsync(TestMessages.MatchHandshakeRequest(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulHandshakeResponse));
-
-            mockProtected
-                .Setup(h => h.SendAsync(TestMessages.MatchConnectRequest(), It.IsAny<CancellationToken>()))
-                .Returns(() =>
-                    Task.Delay(TimeSpan.FromSeconds(5))
-                        .ContinueWith(t => TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulConnectResponse)));
-
-            var bayeuxClient = new BayeuxClient(
-                new BayeuxClientContext(new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(new HttpLongPollingTransportOptions() { HttpClient = new HttpClient(mock.Object), Uri = Url }), new List<IExtension>(), Policy.NoOpAsync()), new List<IExtension>()),
-                new List<IMessageListener>(),
-                new Mock<ISubscriberCache>().Object,
-                new ReconnectDelayOptions(new[] { TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2) }));
-
-            using (bayeuxClient)
-            {
-                bayeuxClient.AddSubscriptions(new ChannelId("/mychannel"));
-                await bayeuxClient.Start().ConfigureAwait(false);
-                await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
-            }
-
-            Assert.Equal(1, subscriptionCount);
-        }
-
-
-
-
         const string Url = "http://testing.net/";
 
 
@@ -191,62 +154,21 @@ namespace FinancialHq.Bayeux.Tests.Unit
             Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken);
         }
 
-        [Fact]
-        public async Task Subscribe_throws_exception_when_not_connected()
-        {
-            var bayeuxClient = new BayeuxClient(
-                new BayeuxClientContext(
-                    new HttpLongPollingTransportOptions() { HttpClient = MockClient, Uri = "none" }.Build(), new List<IExtension>()),
-                new List<IMessageListener>(),
-                new Mock<ISubscriberCache>().Object);
-            await Assert.ThrowsAsync<InvalidOperationException>( async () => await bayeuxClient.Subscribe(new ChannelId("dummy")).ConfigureAwait(false)).ConfigureAwait(false);
-        }
-
-        [Fact]
-        public async Task Unsubscribe_throws_exception_when_not_connected()
-        {
-            var bayeuxClient = new BayeuxClient(
-                new BayeuxClientContext(
-                    new HttpLongPollingTransportOptions() { HttpClient = MockClient, Uri = "none" }.Build(), new List<IExtension>()),
-                new List<IMessageListener>(),
-                new Mock<ISubscriberCache>().Object);
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await bayeuxClient.Unsubscribe(new ChannelId("dummy")).ConfigureAwait(false)).ConfigureAwait(false) ;
-        }
-
-        [Fact]
-        public void AddSubscriptions_succeeds_when_not_connected()
-        {
-            var bayeuxClient = new BayeuxClient(
-                new BayeuxClientContext(
-                    new HttpLongPollingTransportOptions() { HttpClient = MockClient, Uri = "none" }.Build(), new List<IExtension>()),
-                new List<IMessageListener>(),
-                new Mock<ISubscriberCache>().Object);
-            bayeuxClient.AddSubscriptions(new ChannelId("/dummy"));
-        }
-
-        [Fact]
-        public void RemoveSubscriptions_succeeds_when_not_connected()
-        {
-            var bayeuxClient = new BayeuxClient(
-                new BayeuxClientContext(
-                    new HttpLongPollingTransportOptions() { HttpClient = MockClient, Uri = "none" }.Build(),
-                    new List<IExtension>()),
-                new List<IMessageListener>(),
-                new Mock<ISubscriberCache>().Object);
-            bayeuxClient.RemoveSubscriptions(new ChannelId("/dummy"));
-        }
-
+        
         private Mock<HttpMessageHandler> MockHttpMessageHandler => new Mock<HttpMessageHandler>(MockBehavior.Strict);
         private HttpClient MockClient => new HttpClient(MockHttpMessageHandler.Object);
 
         BayeuxClient CreateHttpBayeuxClient(HttpClient httpClient = null, string uri = Url)
         {
+            var transport = new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(new HttpLongPollingTransportOptions()
+            {
+                HttpClient = httpClient,
+                Uri = uri
+            }),
+                new List<IExtension>(),
+                Policy.NoOpAsync());
             return new BayeuxClient(
-                new BayeuxClientContext(new HttpLongPollingTransportOptions()
-                {
-                    HttpClient = httpClient,
-                    Uri = uri,
-                }.Build(), new List<IExtension>()),
+                new BayeuxClientContext(transport, new List<IExtension>()),
                 new List<IMessageListener>(),
                 new Mock<ISubscriberCache>().Object);
         }

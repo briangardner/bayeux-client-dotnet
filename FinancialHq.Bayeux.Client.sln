@@ -6,6 +6,10 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Client", "src\FinancialHq.Bayeux.Client\FinancialHq.Bayeux.Client.csproj", "{0DCEC1E8-CBE2-4F85-A989-FA1A363C04A8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5A1A53E1-A046-4AA3-9856-C8548A932FFA}"
+	ProjectSection(SolutionItems) = preProject
+		vsts-build.prerelease.yml = vsts-build.prerelease.yml
+		vsts-build.release.yml = vsts-build.release.yml
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Extensions.ReplayId", "src\FinancialHq.Bayeux.Extensions.ReplayId\FinancialHq.Bayeux.Extensions.ReplayId.csproj", "{B90B7830-7E2B-42C9-A41E-1280C820EEAB}"
 EndProject
@@ -21,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Extensio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.TestListener", "tests\FinancialHq.Bayeux.TestListener\FinancialHq.Bayeux.TestListener.csproj", "{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialHq.Bayeux.Salesforce", "src\FinancialHq.Bayeux.Salesforce\FinancialHq.Bayeux.Salesforce.csproj", "{085369D8-B27C-4332-A2C3-8DC7A9472F92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Salesforce", "src\FinancialHq.Bayeux.Salesforce\FinancialHq.Bayeux.Salesforce.csproj", "{085369D8-B27C-4332-A2C3-8DC7A9472F92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

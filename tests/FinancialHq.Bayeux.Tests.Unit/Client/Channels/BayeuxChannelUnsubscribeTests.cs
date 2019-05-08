@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using FinancialHq.Bayeux.Client;
 using FinancialHq.Bayeux.Client.Channels;
 using FinancialHq.Bayeux.Client.Messaging;
@@ -19,10 +20,8 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Channels
             _clientContextMock = new Mock<IBayeuxClientContext>();
             _clientContextMock.Setup(client => client.Request(It.IsAny<BayeuxMessage>(), It.IsAny<CancellationToken>()))
                 .Callback(
-                    (object msg, CancellationToken token) =>
-                    {
-                        _unsubscribeMessage = (JObject)msg;
-                    });
+                    (object msg, CancellationToken token) => { _unsubscribeMessage = JObject.FromObject(msg); })
+                .ReturnsAsync(new JObject());
         }
         [Fact]
         public void Should_Not_Attempt_Unsubscribe_When_Subscribers_Still_Present()
@@ -57,7 +56,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Channels
         public void Unsubscribe_Message_Should_Have_Correct_Channel()
         {
             var subscriber1 = new Mock<IObserver<IMessage>>().Object;
-
+            _clientContextMock.Setup(x => x.IsConnected()).Returns(true);
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
             var unsubscriber1 = channel.Subscribe(subscriber1);
             unsubscriber1.Dispose();
@@ -68,7 +67,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.Channels
         public void Unsubscribe_Message_Should_Have_Correct_Subscription()
         {
             var subscriber1 = new Mock<IObserver<IMessage>>().Object;
-
+            _clientContextMock.Setup(x => x.IsConnected()).Returns(true);
             var channel = new BayeuxChannel(_clientContextMock.Object, _channelId);
             var unsubscriber1 = channel.Subscribe(subscriber1);
             unsubscriber1.Dispose();

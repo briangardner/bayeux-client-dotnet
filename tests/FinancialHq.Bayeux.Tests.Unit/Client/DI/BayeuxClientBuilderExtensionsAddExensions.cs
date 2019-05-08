@@ -10,6 +10,7 @@ using FinancialHq.Bayeux.Client.Options;
 using FinancialHq.Bayeux.Extensions.Ack.Extensions;
 using FinancialHq.Bayeux.Extensions.Error.Extensions;
 using FinancialHq.Bayeux.Extensions.ReplayId.Extensions;
+using FinancialHq.Bayeux.Extensions.ReplayId.Strategies;
 using FinancialHq.Bayeux.Extensions.TimesyncClient.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,7 +51,7 @@ namespace FinancialHq.Bayeux.Tests.Unit.Client.DI
             bayeuxClientBuilder.AddTimesyncClient();
             bayeuxClientBuilder.AddAckExtension();
             bayeuxClientBuilder.AddErrorExtension();
-            bayeuxClientBuilder.AddReplayIdExtension().WithDistributedMemoryCache();
+            bayeuxClientBuilder.AddReplayIdExtension(new Mock<IRetrieveReplayIdStrategy>().Object).WithDistributedMemoryCache();
             return collection.BuildServiceProvider();
 
         }
