@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using FinancialHq.Bayeux.Salesforce.Messaging;
+﻿using FinancialHq.Bayeux.Salesforce.Messaging;
 using Newtonsoft.Json;
 
 namespace FinancialHq.Bayeux.TestListener.Messages

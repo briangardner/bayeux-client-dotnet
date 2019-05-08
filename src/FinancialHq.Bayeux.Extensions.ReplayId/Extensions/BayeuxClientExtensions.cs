@@ -3,7 +3,6 @@ using System.Threading;
 using FinancialHq.Bayeux.Client;
 using FinancialHq.Bayeux.Client.Channels;
 using FinancialHq.Bayeux.Client.Listeners;
-using FinancialHq.Bayeux.Client.Messaging;
 
 namespace FinancialHq.Bayeux.Extensions.ReplayId.Extensions
 {

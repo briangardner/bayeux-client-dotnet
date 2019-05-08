@@ -10,7 +10,6 @@ using FinancialHq.Bayeux.Client.Options;
 using FinancialHq.Bayeux.Extensions.Ack.Extensions;
 using FinancialHq.Bayeux.Extensions.Error.Extensions;
 using FinancialHq.Bayeux.Extensions.ReplayId.Extensions;
-using FinancialHq.Bayeux.Extensions.TimesyncClient.Extensions;
 using FinancialHq.Bayeux.Salesforce.Strategies;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>FinancialHq.Bayeux.Client</id>
+    <version>$version$</version>
+    <title>FinancialHq Bayeux Client</title>
+    <authors>FinancialHq</authors>
+    <owners>FinancialHq</owners>
+    <projectUrl>https://usafinancial.visualstudio.com/SalesforceServices/_git/USAF.Bayeux.Client</projectUrl>
+    <iconUrl>http://www.usafinancial.com/style/elegant/assets/images/usa-logo-block.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>FinancialHq client for Bayeux protocol to connect to CometD streams</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>USA Financial Authentication Libraries</tags>
+  </metadata>
+  <files>
+    <file src="src\FinancialHq.Bayeux.Client\bin\release\**\**.dll" target="lib" />
+    <file src="src\FinancialHq.Bayeux.Extensions.Ack\bin\release\**\**.dll" target="lib" />
+    <file src="src\FinancialHq.Bayeux.Extensions.Error\bin\release\**\**.dll" target="lib" />
+    <file src="src\FinancialHq.Bayeux.Extensions.ReplayId\bin\release\**\**.dll" target="lib" />
+    <file src="src\FinancialHq.Bayeux.Extensions.TimesyncClient\bin\release\**\**.dll" target="lib" />
+    <file src="src\FinancialHq.Bayeux.Salesforce\bin\release\**\**.dll" target="lib" />
+  </files>
+</package>

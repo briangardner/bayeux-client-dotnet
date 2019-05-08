@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using FinancialHq.Bayeux.Client;
 using FinancialHq.Bayeux.Client.Channels;
 using FinancialHq.Bayeux.Client.Messaging;

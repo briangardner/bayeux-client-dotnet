@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FinancialHq.Bayeux.Salesforce.Messaging
+﻿namespace FinancialHq.Bayeux.Salesforce.Messaging
 {
     public class MessageEnvelope<TPayload> where TPayload : MessagePayload
     {

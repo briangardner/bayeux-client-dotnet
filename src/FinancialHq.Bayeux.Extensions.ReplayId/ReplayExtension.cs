@@ -2,9 +2,7 @@
 using FinancialHq.Bayeux.Client.Channels;
 using FinancialHq.Bayeux.Client.Extensions;
 using FinancialHq.Bayeux.Client.Messaging;
-using FinancialHq.Bayeux.Extensions.ReplayId.Extensions;
 using FinancialHq.Bayeux.Extensions.ReplayId.Logging;
-using FinancialHq.Bayeux.Extensions.ReplayId.Strategies;
 
 namespace FinancialHq.Bayeux.Extensions.ReplayId
 {

@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FinancialHq.Bayeux.Client;
-using FinancialHq.Bayeux.Client.Channels;
 using FinancialHq.Bayeux.Client.Exceptions;
 using FinancialHq.Bayeux.Client.Extensions;
 using FinancialHq.Bayeux.Client.Listeners;
