@@ -33,8 +33,8 @@ namespace FinancialHq.Bayeux.Client.Channels
 
         public async Task SendSubscribe()
         {
-            _logger.Info("Sending subscribe request.");
             var message = GetSubscribeMessage();
+            _logger.Info("Sending subscribe request. {$message}", message);
             await ClientContext.Request(message, new CancellationToken()).ConfigureAwait(false);
         }
 
@@ -69,7 +69,7 @@ namespace FinancialHq.Bayeux.Client.Channels
         {
             if (!Observers.Contains(observer))
                 Observers.Add(observer);
-            if (Observers.Count == 1)
+            if (Observers.Count == 1 && ClientContext.IsConnected())
             {
                 SendSubscribe().GetAwaiter().GetResult();
             }

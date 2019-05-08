@@ -4,16 +4,15 @@ namespace FinancialHq.Bayeux.Client
 {
     public static class BayeuxClientContextExtensions
     {
-        public static AbstractChannel GetChannel(this IBayeuxClientContext client, string channelId)
+        public static AbstractChannel GetChannel(this IBayeuxClientContext context, string channelId)
         {
-            client.Channels.TryGetValue(channelId, out var channel);
+            context.Channels.TryGetValue(channelId, out var channel);
             if (channel != null)
             {
                 return channel;
             }
             var newChannelId = new ChannelId(channelId);
-            var newChannel = client.NewChannel(newChannelId);
-            client.AddChannel(channelId, newChannel);
+            var newChannel = context.NewChannel(newChannelId);
             return newChannel;
         }
 

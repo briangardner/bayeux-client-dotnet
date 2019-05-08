@@ -41,6 +41,7 @@ namespace FinancialHq.Bayeux.Client
         void RemoveSubscriptions(params ChannelId[] channels);
 
         AbstractChannel GetChannel(ChannelId channelId);
+        void AddChannel(AbstractChannel channel);
 
         // ReSharper disable once UnusedMember.Global
         IDisposable Subscribe<T>(ChannelId channelId, CancellationToken cancellationToken, bool throwIfNotConnected) where T : class, IMessageListener;

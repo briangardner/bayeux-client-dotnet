@@ -30,6 +30,7 @@ namespace FinancialHq.Bayeux.Extensions.ReplayId
 
         public void OnConnected()
         {
+            _log.Info("Replay Subscriber Cache On Connected start");
             var resubscribeChannels = _subscribedChannels.Copy();
 
             foreach (var channelId in resubscribeChannels)

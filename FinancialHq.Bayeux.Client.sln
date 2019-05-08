@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28315.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHQ.Bayeux.Client", "src\FinancialHq.Bayeux.Client\FinancialHq.Bayeux.Client.csproj", "{0DCEC1E8-CBE2-4F85-A989-FA1A363C04A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Client", "src\FinancialHq.Bayeux.Client\FinancialHq.Bayeux.Client.csproj", "{0DCEC1E8-CBE2-4F85-A989-FA1A363C04A8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5A1A53E1-A046-4AA3-9856-C8548A932FFA}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.Extensions.TimesyncClient", "src\FinancialHq.Bayeux.Extensions.TimesyncClient\FinancialHq.Bayeux.Extensions.TimesyncClient.csproj", "{62BC821F-50DF-43F4-8321-35E9ADDD3B10}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinancialHq.Bayeux.TestListener", "tests\FinancialHq.Bayeux.TestListener\FinancialHq.Bayeux.TestListener.csproj", "{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinancialHq.Bayeux.Salesforce", "src\FinancialHq.Bayeux.Salesforce\FinancialHq.Bayeux.Salesforce.csproj", "{085369D8-B27C-4332-A2C3-8DC7A9472F92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48F8DE0A-1D0B-45B6-8908-EC4C18EC0C5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{085369D8-B27C-4332-A2C3-8DC7A9472F92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{085369D8-B27C-4332-A2C3-8DC7A9472F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{085369D8-B27C-4332-A2C3-8DC7A9472F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{085369D8-B27C-4332-A2C3-8DC7A9472F92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

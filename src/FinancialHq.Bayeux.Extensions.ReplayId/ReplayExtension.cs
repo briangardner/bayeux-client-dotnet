@@ -4,6 +4,7 @@ using FinancialHq.Bayeux.Client.Extensions;
 using FinancialHq.Bayeux.Client.Messaging;
 using FinancialHq.Bayeux.Extensions.ReplayId.Extensions;
 using FinancialHq.Bayeux.Extensions.ReplayId.Logging;
+using FinancialHq.Bayeux.Extensions.ReplayId.Strategies;
 
 namespace FinancialHq.Bayeux.Extensions.ReplayId
 {
@@ -35,7 +36,7 @@ namespace FinancialHq.Bayeux.Extensions.ReplayId
             {
                 var value = new Dictionary<string, object>
                 {
-                    { message.Subscription, message.GetReplayId() }
+                    { message.Subscription, message[MessageFields.ReplayIdField] }
                 };
                 message.GetExt(true)[ExtensionName] = value;
             }

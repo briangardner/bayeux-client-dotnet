@@ -26,7 +26,7 @@ namespace FinancialHQ.Bayeux.TestListener
             _logger.Info("StartAsync called");
             await _client.Start(cancellationToken).ConfigureAwait(false);
             //_client.Subscribe<Listener.TestListener>(new ChannelId("/topic/OpportunityAccountTypes"), CancellationToken.None, true);
-            _client.Subscribe<Listener.TestListener>(_serviceProvider, new ChannelId("/topic/OpportunityAccountTypes2"), -2,
+            _client.Subscribe<Listener.TestListener>(_serviceProvider, new ChannelId("/topic/OpportunityAccountTypes2"), 2,
                 CancellationToken.None, true);
             //await _client.Subscribe(new ChannelId("/topic/OpportunityAccountTypes"), cancellationToken).ConfigureAwait(false);
             await Task.CompletedTask.ConfigureAwait(false);

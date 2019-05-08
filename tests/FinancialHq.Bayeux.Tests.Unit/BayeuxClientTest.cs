@@ -9,8 +9,11 @@ using FinancialHq.Bayeux.Client.Exceptions;
 using FinancialHq.Bayeux.Client.Extensions;
 using FinancialHq.Bayeux.Client.Listeners;
 using FinancialHq.Bayeux.Client.Options;
+using FinancialHq.Bayeux.Client.Transport;
+using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
+using Polly;
 using Xunit;
 
 namespace FinancialHq.Bayeux.Tests.Unit
@@ -162,7 +165,7 @@ namespace FinancialHq.Bayeux.Tests.Unit
                         .ContinueWith(t => TestMessages.BuildBayeuxResponse(TestMessages.SuccessfulConnectResponse)));
 
             var bayeuxClient = new BayeuxClient(
-                new BayeuxClientContext(new HttpLongPollingTransportOptions() { HttpClient = new HttpClient(mock.Object), Uri = Url }.Build(), new List<IExtension>()),
+                new BayeuxClientContext(new HttpLongPollingTransport(new OptionsWrapper<HttpLongPollingTransportOptions>(new HttpLongPollingTransportOptions() { HttpClient = new HttpClient(mock.Object), Uri = Url }), new List<IExtension>(), Policy.NoOpAsync()), new List<IExtension>()),
                 new List<IMessageListener>(),
                 new Mock<ISubscriberCache>().Object,
                 new ReconnectDelayOptions(new[] { TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2) }));

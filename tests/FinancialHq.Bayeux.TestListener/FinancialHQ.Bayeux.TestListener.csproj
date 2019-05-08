@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FinancialHq.Salesforce.ApiClient" Version="2.0.0-CI-20190416.3" />
+    <PackageReference Include="FinancialHq.Salesforce.ApiClient" Version="2.0.0" />
     <PackageReference Include="LibLog" Version="5.0.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\FinancialHq.Bayeux.Extensions.Error\FinancialHq.Bayeux.Extensions.Error.csproj" />
     <ProjectReference Include="..\..\src\FinancialHq.Bayeux.Extensions.ReplayId\FinancialHq.Bayeux.Extensions.ReplayId.csproj" />
     <ProjectReference Include="..\..\src\FinancialHq.Bayeux.Extensions.TimesyncClient\FinancialHq.Bayeux.Extensions.TimesyncClient.csproj" />
+    <ProjectReference Include="..\..\src\FinancialHq.Bayeux.Salesforce\FinancialHq.Bayeux.Salesforce.csproj" />
   </ItemGroup>
 
 </Project>

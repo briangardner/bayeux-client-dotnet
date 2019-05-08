@@ -100,9 +100,15 @@ namespace FinancialHq.Bayeux.Client
             return _context.GetChannel(channelId.ToString());
         }
 
+        public void AddChannel(AbstractChannel channel)
+        {
+            _context.AddChannel(channel.ChannelId.ToString(), channel);
+        }
+
         public IDisposable Subscribe<T>(ChannelId channelId, CancellationToken cancellationToken, bool throwIfNotConnected) where T : class, IMessageListener
         {
             var channel = _context.GetChannel(channelId.ToString());
+            _context.AddChannel(channel.ToString(), channel);
             return Subscribe<T>(channel, cancellationToken, throwIfNotConnected);
         }
 

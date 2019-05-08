@@ -11,6 +11,7 @@ using FinancialHq.Bayeux.Extensions.Ack.Extensions;
 using FinancialHq.Bayeux.Extensions.Error.Extensions;
 using FinancialHq.Bayeux.Extensions.ReplayId.Extensions;
 using FinancialHq.Bayeux.Extensions.TimesyncClient.Extensions;
+using FinancialHq.Bayeux.Salesforce.Strategies;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -61,11 +62,11 @@ namespace FinancialHQ.Bayeux.TestListener
                     var provider = services.BuildServiceProvider();
                     var salesforceApiClient = provider.GetService<ISalesforceApiClient>();
                     salesforceApiClient.Client.Timeout = new TimeSpan(0, 0, 2, 10, 0);
-                    services.UseBayeuxClient()
+                    _ = services.UseBayeuxClient()
                         .AddAckExtension()
                         .AddErrorExtension()
-                        .AddTimesyncClient()
-                        .AddReplayIdExtension().WithDistributedMemoryCache()
+                        //.AddTimesyncClient()
+                        .AddReplayIdExtension(new RetrieveReplayIdStrategy()).WithDistributedMemoryCache()
                         .UseHttpLongPolling(new HttpLongPollingTransportOptions()
                         {
                             HttpClient = salesforceApiClient.Client,
